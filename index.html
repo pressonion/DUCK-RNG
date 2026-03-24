@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duck RNG Ultimate V8 - Bug Fixes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-color: #0f172a; --container-bg: rgba(30, 41, 59, 0.85);
+            --text-color: #f8fafc; --accent: #38bdf8;
+            --gold: #fbbf24; --plat: #22d3ee; --shop-bg: rgba(51, 65, 85, 0.8);
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #064e3b, #1e3a8a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-color);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; margin: 0; overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .main-container {
+            background-color: var(--container-bg);
+            backdrop-filter: blur(12px);
+            padding: 30px; border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.1);
+            text-align: center; width: 480px; position: relative;
+        }
+
+        h1 { margin-top: 0; margin-bottom: 20px; color: var(--accent); font-weight: 900; font-size: 32px; letter-spacing: 1px; text-shadow: 0 4px 10px rgba(56, 189, 248, 0.4); }
+        
+        /* Auth Screen Styles */
+        #auth-screen { display: flex; flex-direction: column; gap: 15px; }
+        .auth-input { width: 90%; padding: 15px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15, 23, 42, 0.8); color: white; font-family: inherit; font-size: 16px; font-weight: bold; outline:none; text-align: center; margin: 0 auto;}
+        .auth-input:focus { border-color: var(--accent); }
+        .auth-btn { background: linear-gradient(to bottom, #38bdf8, #0284c7); color: white; font-size: 18px; padding: 15px; box-shadow: 0 8px 20px rgba(2, 132, 199, 0.5); text-transform: uppercase; width: 95%; margin: 10px auto 0; }
+        .auth-btn:hover { background: linear-gradient(to bottom, #7dd3fc, #0369a1); box-shadow: 0 10px 25px rgba(2, 132, 199, 0.7); transform: translateY(-2px); }
+        .auth-btn.signup { background: linear-gradient(to bottom, #a855f7, #7e22ce); box-shadow: 0 8px 20px rgba(126, 34, 206, 0.5); }
+        .auth-btn.signup:hover { background: linear-gradient(to bottom, #c084fc, #9333ea); box-shadow: 0 10px 25px rgba(126, 34, 206, 0.7); }
+        #auth-error { color: #f87171; font-weight: bold; font-size: 14px; min-height: 20px; }
+
+        /* Saved Accounts Display */
+        #saved-accounts-container { display: none; margin-top: 5px; }
+        .saved-accounts-title { color: #cbd5e1; font-size: 14px; margin: 0 0 10px; font-weight: bold; }
+        #saved-accounts-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-height: 80px; overflow-y: auto;}
+        .saved-account-badge { 
+            background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); 
+            color: #e0f2fe; padding: 8px 16px; border-radius: 9999px; font-size: 14px; 
+            font-weight: 800; cursor: pointer; transition: all 0.2s; 
+        }
+        .saved-account-badge:hover { background: rgba(56, 189, 248, 0.4); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3); }
+
+        /* Game Screen Styles */
+        #game-screen { display: none; flex-direction: column; }
+        .user-welcome { font-size: 14px; color: #cbd5e1; margin-bottom: 10px; font-weight: bold; }
+        
+        .stats-board { display: flex; justify-content: space-between; background: rgba(15, 23, 42, 0.6); padding: 12px 20px; border-radius: 9999px; margin-bottom: 20px; font-size: 15px; font-weight: 700; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 4px 6px rgba(0,0,0,0.3); }
+        .gold-text { color: var(--gold); }
+
+        /* Display Area */
+        #display-area { min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, rgba(51, 65, 85, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); border: 2px solid #475569; border-radius: 20px; margin-bottom: 20px; position: relative; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: inset 0 0 30px rgba(0,0,0,0.8); padding: 20px 0; overflow: hidden; }
+        #duck-stage { display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; z-index: 2; }
+        .duck-spot { display: flex; flex-direction: column; align-items: center; width: 45%; position: relative; }
+        .duck-svg { width: 110px; height: 110px; transition: all 0.3s; }
+        
+        /* Animations */
+        .rolling .duck-svg { animation: shake 0.3s infinite; filter: brightness(0) drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+        .pop-reveal .duck-svg { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg) scale(0.9); } 25% { transform: translate(-1px, -2px) rotate(-5deg) scale(0.9); } 50% { transform: translate(-3px, 0px) rotate(5deg) scale(0.9); } 75% { transform: translate(3px, 2px) rotate(-5deg) scale(0.9); } 100% { transform: translate(1px, -1px) rotate(0deg) scale(0.9); } }
+        @keyframes popIn { 0% { transform: scale(0.2); opacity: 0; } 60% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+
+        /* Effects */
+        .is-shiny { animation: shinyGlow 2s infinite alternate; }
+        @keyframes shinyGlow { from { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 15px var(--gold)); } to { filter: drop-shadow(0 0 20px #fff) drop-shadow(0 0 35px #f59e0b); } }
+        .is-platinum { animation: platGlow 2s infinite alternate; filter: grayscale(0.8) brightness(1.4) contrast(1.2); }
+        @keyframes platGlow { from { filter: grayscale(0.8) brightness(1.4) contrast(1.2) drop-shadow(0 0 10px #fff) drop-shadow(0 0 15px var(--plat)); } to { filter: grayscale(0.8) brightness(1.4) contrast(1.2) drop-shadow(0 0 20px #fff) drop-shadow(0 0 35px #06b6d4); } }
+        .is-shiny.is-platinum { animation: ultimateGlow 2s infinite alternate; filter: brightness(1.2) contrast(1.1); }
+        @keyframes ultimateGlow { from { filter: brightness(1.2) contrast(1.1) drop-shadow(-15px 0 15px #f59e0b) drop-shadow(15px 0 15px #06b6d4); } to { filter: brightness(1.2) contrast(1.1) drop-shadow(15px 0 30px #fbbf24) drop-shadow(-15px 0 30px #22d3ee); } }
+
+        /* Text & Tags */
+        .duck-name { font-size: 22px; font-weight: 900; margin: 10px 0 5px; min-height: 28px; letter-spacing: 0.5px; opacity: 0; }
+        .duck-rarity { font-size: 13px; font-weight: 900; padding: 5px 12px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 1px; display: none; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .tag-row { display: flex; gap: 5px; height: 22px; margin-bottom: 5px; justify-content: center; flex-wrap: wrap;}
+        .tag { padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 900; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .tag-new { background: #ef4444; color: white; }
+        .tag-shiny { background: linear-gradient(45deg, var(--gold), #f59e0b); color: #451a03; }
+        .tag-platinum { background: linear-gradient(45deg, #e0f2fe, var(--plat)); color: #082f49; }
+
+        /* Buttons */
+        button { border: none; padding: 14px 20px; font-size: 16px; font-weight: 800; border-radius: 9999px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; margin-bottom: 10px; font-family: 'Nunito', sans-serif; letter-spacing: 0.5px; }
+        button:active { transform: scale(0.95); }
+        #roll-btn { background: linear-gradient(to bottom, #38bdf8, #0284c7); color: white; font-size: 22px; padding: 18px; box-shadow: 0 8px 20px rgba(2, 132, 199, 0.5); text-transform: uppercase;}
+        #roll-btn:hover { background: linear-gradient(to bottom, #7dd3fc, #0369a1); box-shadow: 0 10px 25px rgba(2, 132, 199, 0.7); transform: translateY(-2px); }
+        #roll-btn:disabled { background: #475569; cursor: not-allowed; transform: none; box-shadow: none; color: #94a3b8; }
+        .btn-row { display: flex; gap: 10px; }
+        .sub-btn { background-color: rgba(51, 65, 85, 0.7); color: white; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 0; padding: 12px; font-size: 14px;}
+        .sub-btn:hover { background-color: rgba(71, 85, 105, 0.9); transform: translateY(-2px); }
+        #shop-btn { background-color: rgba(22, 101, 52, 0.7); }
+        #shop-btn:hover { background-color: rgba(21, 128, 61, 0.9); }
+        #toggle-mode-container { margin-top: 15px; display: none; }
+        #toggle-mode-btn { background: rgba(76, 29, 149, 0.8); color: white; border: 1px solid #7c3aed; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); }
+
+        /* Modals */
+        .modal { position: absolute; inset: 0; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); border-radius: 30px; display: none; flex-direction: column; padding: 25px; z-index: 10; }
+        .modal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; overflow-y: auto; flex-grow: 1; margin-bottom: 15px; padding-right: 5px; }
+        .duck-card { background: rgba(30, 41, 59, 0.8); border-radius: 16px; padding: 12px 5px; text-align: center; border: 2px solid rgba(255,255,255,0.05); position: relative; transition: transform 0.2s; }
+        .duck-card:hover { transform: translateY(-2px); }
+        .duck-card.locked { filter: grayscale(100%) brightness(0.2); }
+        .card-name { font-size: 13px; font-weight: 800; margin-top: 8px; color: #f8fafc; }
+        .icon-tray { position: absolute; top: 4px; right: 6px; display: flex; gap: 3px; font-size: 14px; }
+        .shop-list { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex-grow: 1; margin-bottom: 15px; padding-right: 5px; }
+        .shop-item { background: var(--shop-bg); padding: 18px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+        .shop-info { text-align: left; }
+        .shop-info h3 { margin: 0 0 5px 0; color: var(--gold); font-size: 18px; font-weight: 900;}
+        .shop-info p { margin: 0; font-size: 13px; color: #cbd5e1; font-weight: 600;}
+        .buy-btn { width: auto; padding: 10px 18px; background: var(--gold); color: #451a03; margin: 0; font-size: 14px; }
+        .buy-btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; transform: none;}
+        .buy-btn.owned { background: #15803d; color: white; cursor: default; }
+        .settings-content { display: flex; flex-direction: column; gap: 15px; flex-grow: 1; text-align: left; margin-top: 10px; }
+        .setting-box { background: var(--shop-bg); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .setting-box h3 { margin: 0 0 10px 0; font-size: 18px; color: white; font-weight: 900;}
+        .code-input-row { display: flex; gap: 10px; }
+        #cheat-input { flex-grow: 1; padding: 12px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15, 23, 42, 0.8); color: white; font-family: inherit; font-weight: bold; outline:none;}
+        #cheat-input:focus { border-color: var(--accent); }
+        #cheat-submit { width: auto; background: var(--accent); color: white; margin: 0; padding: 10px 24px; }
+        #cheat-message { font-size: 14px; margin-top: 10px; font-weight: 800; height: 15px; text-align: center;}
+        .close-btn { background-color: #ef4444; color: white; margin-top: auto; }
+        .close-btn:hover { background-color: #dc2626; }
+
+        /* Particles System */
+        .particle { position: absolute; bottom: 10%; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; z-index: 1; animation: explode 1s ease-out forwards; }
+        @keyframes explode { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.8); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    
+    <div id="auth-screen">
+        <h1>Duck RNG Login</h1>
+        <p style="color: #94a3b8; font-size: 14px; margin-top:-15px;">Welcome! Log in or create a profile.</p>
+        
+        <input type="text" id="username-input" class="auth-input" placeholder="Username" autocomplete="off">
+        <input type="password" id="password-input" class="auth-input" placeholder="Password">
+        
+        <div id="auth-error"></div>
+        
+        <button id="login-btn" class="auth-btn">Log In</button>
+        <button id="signup-btn" class="auth-btn signup">Sign Up New Account</button>
+
+        <div id="saved-accounts-container">
+            <p class="saved-accounts-title">Saved Profiles (Click to select)</p>
+            <div id="saved-accounts-list"></div>
+        </div>
+    </div>
+
+    <div id="game-screen">
+        <h1>Duck RNG Ultimate</h1>
+        <div class="user-welcome">Logged in as: <span id="current-username-display" style="color:var(--accent);">Player</span></div>
+        
+        <div class="stats-board">
+            <span>Rolls: <span id="roll-count" style="color:var(--accent)">0</span></span>
+            <span>Flock: <span id="collection-count" style="color:#a855f7">0</span>/<span id="total-ducks">0</span></span>
+            <span class="gold-text">Coins: <span id="coin-count">0</span></span>
+        </div>
+
+        <div id="display-area">
+            <div id="duck-stage">
+                <div class="duck-spot" id="spot-1">
+                    <div class="tag-row">
+                        <span class="tag tag-new">NEW!</span><span class="tag tag-shiny">✨ SHINY</span><span class="tag tag-platinum">💎 PLAT</span>
+                    </div>
+                    <div class="svg-container"></div>
+                    <div class="duck-name" style="color:#94a3b8">Ready</div>
+                    <div class="duck-rarity"></div>
+                </div>
+                <div class="duck-spot" id="spot-2" style="display:none;">
+                    <div class="tag-row">
+                        <span class="tag tag-new">NEW!</span><span class="tag tag-shiny">✨ SHINY</span><span class="tag tag-platinum">💎 PLAT</span>
+                    </div>
+                    <div class="svg-container"></div>
+                    <div class="duck-name" style="color:#94a3b8">Ready</div>
+                    <div class="duck-rarity"></div>
+                </div>
+            </div>
+        </div>
+
+        <button id="roll-btn">Roll for a Duck!</button>
+        
+        <div class="btn-row">
+            <button id="collection-btn" class="sub-btn">🎒 Collection</button>
+            <button id="shop-btn" class="sub-btn">🛒 Quack Shop</button>
+            <button id="settings-btn" class="sub-btn">⚙️ Settings</button>
+        </div>
+
+        <div id="toggle-mode-container">
+            <button id="toggle-mode-btn">Mode: Single Roll</button>
+        </div>
+
+        <div id="collection-modal" class="modal">
+            <h2 style="margin-top:0; color:var(--accent); font-weight:900;">Duck Collection</h2>
+            <div id="collection-grid" class="modal-grid"></div>
+            <button class="close-btn" onclick="closeModal('collection-modal')">Close Collection</button>
+        </div>
+
+        <div id="shop-modal" class="modal">
+            <h2 style="margin-top:0; color:var(--gold); font-weight:900;">Quack Shop</h2>
+            <div id="shop-list" class="shop-list"></div>
+            <button class="close-btn" onclick="closeModal('shop-modal')">Close Shop</button>
+        </div>
+
+        <div id="settings-modal" class="modal">
+            <h2 style="margin-top:0; color:#cbd5e1; font-weight:900;">Settings</h2>
+            <div class="settings-content">
+                <div class="setting-box">
+                    <h3>Account Profile</h3>
+                    <button id="logout-btn" style="background:#475569; margin:0;">Log Out</button>
+                </div>
+                <div class="setting-box">
+                    <h3>Secret Codes</h3>
+                    <div class="code-input-row">
+                        <input type="text" id="cheat-input" placeholder="Enter code..." autocomplete="off">
+                        <button id="cheat-submit">Enter</button>
+                    </div>
+                    <div id="cheat-message"></div>
+                </div>
+                <div class="setting-box" style="margin-top: auto; border-color: rgba(220, 38, 38, 0.4); background: rgba(69, 10, 10, 0.6);">
+                    <h3 style="color: #fca5a5;">Danger Zone</h3>
+                    <button id="hard-reset-btn" style="background:rgba(127, 29, 29, 0.8); color: white; margin:0;">Wipe Account Data</button>
+                </div>
+            </div>
+            <button class="close-btn" onclick="closeModal('settings-modal')">Close Settings</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Database of Ducks & Shop
+    const duckData = [
+        { id: "mallard", name: "Mallard", rarity: "Common", weight: 500, color: "#a3e635", svg: { body: "#8D6E63", head: "#4CAF50", beak: "#FFB300", tail: "#795548", accessory: "" } },
+        { id: "rubber", name: "Rubber", rarity: "Common", weight: 400, color: "#a3e635", svg: { body: "#FFEB3B", head: "#FFEB3B", beak: "#FF9800", tail: "#FDD835", accessory: "" } },
+        { id: "cotton", name: "Cotton Candy", rarity: "Uncommon", weight: 250, color: "#38bdf8", svg: { body: "#F48FB1", head: "#81D4FA", beak: "#FFCC80", tail: "#CE93D8", accessory: "" } },
+        { id: "ninja", name: "Ninja", rarity: "Uncommon", weight: 200, color: "#38bdf8", svg: { body: "#212121", head: "#212121", beak: "#424242", tail: "#000000", accessory: `<rect x="52" y="25" width="36" height="6" fill="#ef4444" transform="rotate(-10 70 35)" />` } },
+        { id: "king", name: "King", rarity: "Rare", weight: 100, color: "#a855f7", svg: { body: "#FFFFFF", head: "#FFFFFF", beak: "#FF9800", tail: "#E0E0E0", accessory: `<path d="M 60 15 L 65 5 L 70 15 L 80 20 L 70 25 L 65 35 L 60 25 L 50 20 Z" fill="#FFC107"/>` } },
+        { id: "wizard", name: "Wizard", rarity: "Rare", weight: 75, color: "#a855f7", svg: { body: "#311B92", head: "#512DA8", beak: "#FFC107", tail: "#1A237E", accessory: `<path d="M 50 25 L 70 -5 L 90 25 Z" fill="#673AB7" stroke="#FFC107" stroke-width="2"/>` } },
+        { id: "vampire", name: "Vampire", rarity: "Epic", weight: 30, color: "#f43f5e", svg: { body: "#111827", head: "#111827", beak: "#9CA3AF", tail: "#000000", accessory: `<path d="M 85 42 L 87 46 L 89 42 Z" fill="#FFF"/><circle cx="75" cy="30" r="3" fill="#ef4444" />` } },
+        { id: "cyborg", name: "Cyborg", rarity: "Epic", weight: 20, color: "#f43f5e", svg: { body: "#9E9E9E", head: "#E0E0E0", beak: "#757575", tail: "#616161", accessory: `<circle cx="75" cy="30" r="4" fill="#ff0000" /><rect x="60" y="28" width="10" height="4" fill="#424242"/>` } },
+        { id: "glitch", name: "Glitch", rarity: "Legendary", weight: 5, color: "#fbbf24", svg: { body: "#000000", head: "#000000", beak: "#39FF14", tail: "#000000", accessory: `<rect x="40" y="50" width="10" height="10" fill="#FF00FF"/><rect x="60" y="60" width="15" height="5" fill="#39FF14"/><rect x="65" y="20" width="8" height="8" fill="#00FFFF"/>` } },
+        { id: "gold", name: "Solid Gold", rarity: "Legendary", weight: 4, color: "#fbbf24", svg: { body: "#FFC107", head: "#FFD54F", beak: "#FFE082", tail: "#FFB300", accessory: `<path d="M 60 15 L 65 5 L 70 15 L 80 20 L 70 25 L 65 35 L 60 25 L 50 20 Z" fill="#FFF"/>` } },
+        { id: "alien", name: "Alien", rarity: "Mythical", weight: 1.5, color: "#ec4899", svg: { body: "#39FF14", head: "#39FF14", beak: "#111827", tail: "#22C55E", accessory: `<ellipse cx="75" cy="30" rx="6" ry="10" fill="#000" transform="rotate(20 75 30)"/>` } },
+        { id: "cosmic", name: "Cosmic", rarity: "Mythical", weight: 1, color: "#ec4899", svg: { body: "#1A237E", head: "#311B92", beak: "#00BCD4", tail: "#0D47A1", accessory: `<circle cx="40" cy="60" r="2" fill="#FFF"/><circle cx="55" cy="50" r="1.5" fill="#FFF"/><circle cx="30" cy="70" r="1" fill="#FFF"/>` } }
+    ];
+    const shopData = {
+        shinyCharm: { id: 'shinyCharm', name: 'Shiny Charm', desc: 'Triples your chance of rolling a Shiny (15%).', cost: 300 },
+        platPolish: { id: 'platPolish', name: 'Platinum Polish', desc: 'Doubles your chance of rolling a Platinum (4%).', cost: 1000 },
+        luckyLoaf: { id: 'luckyLoaf', name: 'Lucky Loaf', desc: 'Rare+ ducks are 2x more common.', cost: 800 },
+        hyperRoller: { id: 'hyperRoller', name: 'Hyper Roller', desc: 'Removes the rolling wait time.', cost: 1500 },
+        twinEgg: { id: 'twinEgg', name: 'Twin Egg', desc: 'Unlocks rolling 2 ducks at once!', cost: 3000 }
+    };
+
+    // --- Account Management System ---
+    let accounts = JSON.parse(localStorage.getItem('duckV6Accounts')) || {};
+    let currentUser = null;
+    let saveFile = null;
+
+    function createDefaultSave() {
+        return { unlocked: [], shinyUnlocked: [], platinumUnlocked: [], rolls: 0, coins: 0, upgrades: {}, isDoubleMode: false };
+    }
+
+    const authScreen = document.getElementById('auth-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const userInp = document.getElementById('username-input');
+    const passInp = document.getElementById('password-input');
+    const authErr = document.getElementById('auth-error');
+
+    function renderSavedAccounts() {
+        const container = document.getElementById('saved-accounts-container');
+        const list = document.getElementById('saved-accounts-list');
+        const usernames = Object.keys(accounts);
+
+        if (usernames.length === 0) { container.style.display = 'none'; return; }
+
+        container.style.display = 'block'; list.innerHTML = '';
+        usernames.forEach(uname => {
+            const badge = document.createElement('div');
+            badge.className = 'saved-account-badge'; badge.innerText = uname;
+            badge.onclick = () => { userInp.value = uname; passInp.value = ''; passInp.focus(); authErr.innerText = ''; };
+            list.appendChild(badge);
+        });
+    }
+    renderSavedAccounts();
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+        accounts = JSON.parse(localStorage.getItem('duckV6Accounts')) || {}; 
+        const u = userInp.value.trim();
+        // BUG FIX: .trim() removes invisible spaces from the password!
+        const p = passInp.value.trim(); 
+        if(!u) return showAuthError("Please enter a username.");
+        
+        // BUG FIX: Also trim the saved password just in case it was saved badly before.
+        if(accounts[u] && accounts[u].password.trim() === p) { startGameAs(u); } 
+        else { showAuthError("Incorrect username or password."); }
+    });
+
+    document.getElementById('signup-btn').addEventListener('click', () => {
+        accounts = JSON.parse(localStorage.getItem('duckV6Accounts')) || {}; 
+        const u = userInp.value.trim();
+        // BUG FIX: Clean the password during signup too!
+        const p = passInp.value.trim(); 
+        if(!u || !p) return showAuthError("Username and password required to sign up.");
+        if(accounts[u]) return showAuthError("Username already exists! Try logging in.");
+        
+        accounts[u] = { password: p, saveData: createDefaultSave() };
+        localStorage.setItem('duckV6Accounts', JSON.stringify(accounts));
+        renderSavedAccounts(); startGameAs(u);
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        closeModal('settings-modal');
+        currentUser = null; saveFile = null; 
+        gameScreen.style.display = 'none';
+        authScreen.style.display = 'flex';
+        userInp.value = ''; passInp.value = ''; authErr.innerText = '';
+        renderSavedAccounts(); 
+    });
+
+    function showAuthError(msg) { authErr.innerText = msg; }
+
+    function startGameAs(username) {
+        currentUser = username;
+        saveFile = accounts[username].saveData;
+        
+        if(!saveFile.platinumUnlocked) saveFile.platinumUnlocked = [];
+        if(!saveFile.upgrades) saveFile.upgrades = {};
+
+        authScreen.style.display = 'none';
+        gameScreen.style.display = 'flex';
+        document.getElementById('current-username-display').innerText = username;
+        
+        initGameUI();
+    }
+
+    // --- Core Game Functions ---
+    const elements = {
+        rollBtn: document.getElementById('roll-btn'), displayArea: document.getElementById('display-area'),
+        rollCount: document.getElementById('roll-count'), colCount: document.getElementById('collection-count'),
+        totalDucks: document.getElementById('total-ducks'), coins: document.getElementById('coin-count'),
+        spots: [document.getElementById('spot-1'), document.getElementById('spot-2')],
+        toggleContainer: document.getElementById('toggle-mode-container'), toggleBtn: document.getElementById('toggle-mode-btn')
+    };
+
+    function initGameUI() {
+        elements.totalDucks.innerText = duckData.length;
+        
+        // BUG FIX: Completely wipe the screen of the last person's ducks!
+        elements.spots[0].style.display = 'flex';
+        elements.spots[1].style.display = 'none';
+        elements.spots.forEach(spot => {
+            spot.querySelector('.svg-container').innerHTML = generateSVGString({id:'none', svg:{body:'#475569', head:'#475569', beak:'#334155', tail:'#475569', accessory:''}}, false, false);
+            spot.querySelector('.duck-name').style.opacity = '0';
+            spot.querySelector('.duck-rarity').style.display = 'none';
+            spot.querySelectorAll('.tag').forEach(t => t.style.display = 'none');
+        });
+        elements.displayArea.style.borderColor = '#475569';
+        elements.displayArea.style.boxShadow = "inset 0 0 30px rgba(0,0,0,0.8)";
+        
+        updateUI(); 
+        buildShop(); // BUG FIX: Rebuild the shop right away so upgrades don't leak!
+    }
+
+    function saveGame() {
+        accounts[currentUser].saveData = saveFile;
+        localStorage.setItem('duckV6Accounts', JSON.stringify(accounts));
+        updateUI();
+    }
+
+    function updateUI() {
+        elements.rollCount.innerText = saveFile.rolls;
+        elements.colCount.innerText = saveFile.unlocked.length;
+        elements.coins.innerText = saveFile.coins;
+        
+        // BUG FIX: Hide the double roll button if the new account doesn't own it!
+        if (saveFile.upgrades.twinEgg) {
+            elements.toggleContainer.style.display = 'block';
+            elements.toggleBtn.innerText = saveFile.isDoubleMode ? "Mode: Double Roll (2x Cost)" : "Mode: Single Roll";
+            elements.toggleBtn.style.background = saveFile.isDoubleMode ? "rgba(219, 39, 119, 0.8)" : "rgba(76, 29, 149, 0.8)";
+        } else {
+            elements.toggleContainer.style.display = 'none';
+            saveFile.isDoubleMode = false; // Turn it off just in case
+        }
+    }
+
+    function generateSVGString(duck, isShiny, isPlatinum) {
+        let classes = 'duck-svg' + (isShiny ? ' is-shiny' : '') + (isPlatinum ? ' is-platinum' : '');
+        return `<svg class="${classes}" viewBox="0 0 100 100">
+            <path d="M 15 50 L 0 30 L 25 55 Z" fill="${duck.svg.tail}" />
+            <ellipse cx="45" cy="65" rx="35" ry="25" fill="${duck.svg.body}" />
+            <circle cx="70" cy="35" r="18" fill="${duck.svg.head}" />
+            <path d="M 85 30 L 100 35 L 85 42 Z" fill="${duck.svg.beak}" />
+            <circle cx="75" cy="30" r="3" fill="${duck.id === 'vampire' ? '#ef4444' : '#0f172a'}" />
+            <g>${duck.svg.accessory}</g>
+        </svg>`;
+    }
+
+    function spawnParticles(color) {
+        const area = document.getElementById('display-area');
+        for (let i = 0; i < 20; i++) {
+            let p = document.createElement('div'); p.className = 'particle'; p.style.backgroundColor = color; p.style.left = '50%';
+            p.style.setProperty('--tx', (Math.random() - 0.5) * 250 + 'px'); p.style.setProperty('--ty', (Math.random() - 0.5) * 250 - 50 + 'px');
+            area.appendChild(p); setTimeout(() => p.remove(), 1000);
+        }
+    }
+
+    function calculateDuck() {
+        let currentTotalWeight = 0;
+        let modifiedDucks = duckData.map(d => {
+            let w = d.weight;
+            if (saveFile.upgrades.luckyLoaf && ['Rare', 'Epic', 'Legendary', 'Mythical'].includes(d.rarity)) w *= 2; 
+            currentTotalWeight += w; return { ...d, activeWeight: w };
+        });
+        let randomNum = Math.random() * currentTotalWeight;
+        for (let duck of modifiedDucks) {
+            if (randomNum < duck.activeWeight) return duck;
+            randomNum -= duck.activeWeight;
+        }
+        return modifiedDucks[0];
+    }
+
+    function rollSequence() {
+        elements.rollBtn.disabled = true;
+        let numRolls = saveFile.isDoubleMode ? 2 : 1;
+        
+        elements.spots[0].style.display = 'flex';
+        elements.spots[1].style.display = numRolls === 2 ? 'flex' : 'none';
+        elements.displayArea.classList.remove('pop-reveal'); elements.displayArea.classList.add('rolling');
+        elements.displayArea.style.borderColor = '#475569'; elements.displayArea.style.boxShadow = "inset 0 0 30px rgba(0,0,0,0.8)";
+
+        for(let i=0; i<2; i++) {
+            elements.spots[i].querySelector('.duck-name').style.opacity = '0';
+            elements.spots[i].querySelector('.duck-rarity').style.display = 'none';
+            elements.spots[i].querySelectorAll('.tag').forEach(t => t.style.display = 'none');
+        }
+
+        setTimeout(() => {
+            elements.displayArea.classList.remove('rolling'); elements.displayArea.classList.add('pop-reveal');
+            let colorAccent = '#475569'; let highestDuckColor = null;
+
+            for(let i=0; i<numRolls; i++) {
+                saveFile.rolls++;
+                let duck = calculateDuck();
+                let isShiny = Math.random() < (saveFile.upgrades.shinyCharm ? 0.15 : 0.05);
+                let isPlatinum = Math.random() < (saveFile.upgrades.platPolish ? 0.04 : 0.02);
+                
+                let isNew = false;
+                if (!saveFile.unlocked.includes(duck.id)) { saveFile.unlocked.push(duck.id); isNew = true; saveFile.coins += 25; } else { saveFile.coins += 5; }
+                if (isShiny) { if (!saveFile.shinyUnlocked.includes(duck.id)) saveFile.shinyUnlocked.push(duck.id); saveFile.coins += 50; }
+                if (isPlatinum) { if (!saveFile.platinumUnlocked.includes(duck.id)) saveFile.platinumUnlocked.push(duck.id); saveFile.coins += 150; }
+
+                let spot = elements.spots[i];
+                spot.querySelector('.svg-container').innerHTML = generateSVGString(duck, isShiny, isPlatinum);
+                let nameEl = spot.querySelector('.duck-name');
+                nameEl.innerText = duck.name; nameEl.style.opacity = '1'; nameEl.style.color = 'white'; nameEl.style.textShadow = `0 0 10px ${duck.color}, 0 2px 4px rgba(0,0,0,0.8)`;
+                
+                let rarityEl = spot.querySelector('.duck-rarity');
+                rarityEl.innerText = duck.rarity; rarityEl.style.display = "inline-block"; rarityEl.style.backgroundColor = duck.color + "33"; rarityEl.style.color = duck.color; rarityEl.style.border = `1px solid ${duck.color}`;
+
+                spot.querySelector('.tag-new').style.display = isNew ? "block" : "none";
+                spot.querySelector('.tag-shiny').style.display = isShiny ? "block" : "none";
+                spot.querySelector('.tag-platinum').style.display = isPlatinum ? "block" : "none";
+
+                if (duck.weight < (duckData.find(d => d.color === colorAccent)?.weight || 9999)) colorAccent = duck.color;
+                if (['Rare','Epic','Legendary','Mythical'].includes(duck.rarity) || isShiny || isPlatinum) highestDuckColor = duck.color;
+            }
+
+            elements.displayArea.style.borderColor = colorAccent;
+            elements.displayArea.style.boxShadow = `inset 0 0 50px ${colorAccent}44, 0 0 20px ${colorAccent}44`;
+            if(highestDuckColor) spawnParticles(highestDuckColor);
+            saveGame(); elements.rollBtn.disabled = false;
+        }, saveFile.upgrades.hyperRoller ? 50 : 800);
+    }
+
+    function buildShop() {
+        const shopList = document.getElementById('shop-list'); shopList.innerHTML = '';
+        Object.values(shopData).forEach(item => {
+            let isOwned = saveFile.upgrades[item.id]; let canAfford = saveFile.coins >= item.cost;
+            let div = document.createElement('div'); div.className = 'shop-item';
+            div.innerHTML = `<div class="shop-info"><h3>${item.name}</h3><p>${item.desc}</p></div>
+                <button class="buy-btn ${isOwned ? 'owned' : ''}" ${isOwned || !canAfford ? 'disabled' : ''} onclick="buyUpgrade('${item.id}', ${item.cost})">${isOwned ? 'Owned' : item.cost + ' Coins'}</button>`;
+            shopList.appendChild(div);
+        });
+    }
+
+    window.buyUpgrade = function(id, cost) {
+        if (saveFile.coins >= cost && !saveFile.upgrades[id]) { saveFile.coins -= cost; saveFile.upgrades[id] = true; saveGame(); buildShop(); }
+    }
+
+    function buildCollectionGrid() {
+        const grid = document.getElementById('collection-grid'); grid.innerHTML = ''; 
+        duckData.forEach(duck => {
+            const isUnlocked = saveFile.unlocked.includes(duck.id);
+            const card = document.createElement('div'); card.className = `duck-card ${isUnlocked ? '' : 'locked'}`;
+            if(isUnlocked) card.style.borderColor = duck.color;
+            let miniSVG = generateSVGString(duck, false, false).replace('viewBox="0 0 100 100"', 'viewBox="0 0 100 100" width="55" height="55" style="margin:auto;"');
+            if(!isUnlocked) miniSVG = miniSVG.replace(/fill="[^"]*"/g, 'fill="#475569"');
+            card.innerHTML = `<div class="icon-tray">${saveFile.shinyUnlocked.includes(duck.id) ? '<span>✨</span>' : ''}${saveFile.platinumUnlocked.includes(duck.id) ? '<span>💎</span>' : ''}</div>
+                ${miniSVG}<div class="card-name">${isUnlocked ? duck.name : '???'}</div>`;
+            grid.appendChild(card);
+        });
+    }
+
+    elements.rollBtn.addEventListener('click', rollSequence);
+    document.getElementById('collection-btn').addEventListener('click', () => { buildCollectionGrid(); document.getElementById('collection-modal').style.display = 'flex'; });
+    document.getElementById('shop-btn').addEventListener('click', () => { buildShop(); document.getElementById('shop-modal').style.display = 'flex'; });
+    document.getElementById('settings-btn').addEventListener('click', () => { document.getElementById('settings-modal').style.display = 'flex'; });
+    window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
+    elements.toggleBtn.addEventListener('click', () => { saveFile.isDoubleMode = !saveFile.isDoubleMode; saveGame(); });
+
+    // BUG FIX: The Wipe Button now actually clears the active memory properly!
+    document.getElementById('hard-reset-btn').addEventListener('click', () => {
+        if(confirm(`DANGER! This deletes ALL data for player '${currentUser}'. Are you sure?`)) {
+            saveFile = createDefaultSave(); // Reset active memory
+            saveGame(); // Save it to the database
+            initGameUI(); // Reset the visuals
+            closeModal('settings-modal'); 
+            alert("Account wiped successfully.");
+        }
+    });
+
+    document.getElementById('cheat-submit').addEventListener('click', () => {
+        const inputField = document.getElementById('cheat-input'); const code = inputField.value.trim().toLowerCase(); const msg = document.getElementById('cheat-message');
+        if (code === 'super') {
+            saveFile.coins += 9999999; saveFile.unlocked = duckData.map(d => d.id); saveFile.shinyUnlocked = duckData.map(d => d.id); saveFile.platinumUnlocked = duckData.map(d => d.id);
+            Object.keys(shopData).forEach(key => saveFile.upgrades[key] = true); saveGame();
+            msg.innerText = "Cheat Activated! God Mode!"; msg.style.color = "#22c55e"; inputField.value = "";
+        } else { msg.innerText = "Invalid code."; msg.style.color = "#ef4444"; }
+        setTimeout(() => { msg.innerText = ""; }, 3000);
+    });
+</script>
+
+</body>
+</html>
