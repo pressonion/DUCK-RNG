@@ -3,25 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duck RNG Ultimate V8 - Bug Fixes</title>
+    <title>Duck RNG Ultimate V9 - Dynamic Backgrounds</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
 
         :root {
-            --bg-color: #0f172a; --container-bg: rgba(30, 41, 59, 0.85);
+            --container-bg: rgba(30, 41, 59, 0.85);
             --text-color: #f8fafc; --accent: #38bdf8;
             --gold: #fbbf24; --plat: #22d3ee; --shop-bg: rgba(51, 65, 85, 0.8);
         }
         
         body {
             font-family: 'Nunito', sans-serif;
-            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #064e3b, #1e3a8a);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             color: var(--text-color);
             display: flex; justify-content: center; align-items: center;
             height: 100vh; margin: 0; overflow: hidden;
+            transition: background 2s ease-in-out; /* Smooth transition between rarities */
         }
+
+        /* --- Dynamic Background Classes --- */
+        body.bg-default, body.bg-Common { background-image: linear-gradient(-45deg, #0f172a, #1e1b4b, #064e3b, #1e3a8a); }
+        body.bg-Uncommon { background-image: linear-gradient(-45deg, #0f172a, #0c4a6e, #164e63, #0284c7); }
+        body.bg-Rare { background-image: linear-gradient(-45deg, #2e1065, #4c1d95, #3b0764, #1e1b4b); }
+        body.bg-Epic { background-image: linear-gradient(-45deg, #4c0519, #881337, #7f1d1d, #450a0a); }
+        body.bg-Legendary { background-image: linear-gradient(-45deg, #451a03, #78350f, #b45309, #d97706); }
+        body.bg-Mythical { background-image: linear-gradient(-45deg, #000000, #312e81, #0f172a, #831843); }
 
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
@@ -147,7 +155,7 @@
         ::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.8); border-radius: 10px; }
     </style>
 </head>
-<body>
+<body class="bg-default">
 
 <div class="main-container">
     
@@ -250,21 +258,29 @@
 </div>
 
 <script>
-    // Database of Ducks & Shop
+    // Database of Ducks & Shop (Now with 19 Ducks!)
     const duckData = [
         { id: "mallard", name: "Mallard", rarity: "Common", weight: 500, color: "#a3e635", svg: { body: "#8D6E63", head: "#4CAF50", beak: "#FFB300", tail: "#795548", accessory: "" } },
         { id: "rubber", name: "Rubber", rarity: "Common", weight: 400, color: "#a3e635", svg: { body: "#FFEB3B", head: "#FFEB3B", beak: "#FF9800", tail: "#FDD835", accessory: "" } },
         { id: "cotton", name: "Cotton Candy", rarity: "Uncommon", weight: 250, color: "#38bdf8", svg: { body: "#F48FB1", head: "#81D4FA", beak: "#FFCC80", tail: "#CE93D8", accessory: "" } },
+        { id: "chef", name: "Chef", rarity: "Uncommon", weight: 220, color: "#f8fafc", svg: { body: "#f1f5f9", head: "#f8fafc", beak: "#fbbf24", tail: "#e2e8f0", accessory: `<path d="M 60 15 Q 70 -5 80 15 Z" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>` } },
         { id: "ninja", name: "Ninja", rarity: "Uncommon", weight: 200, color: "#38bdf8", svg: { body: "#212121", head: "#212121", beak: "#424242", tail: "#000000", accessory: `<rect x="52" y="25" width="36" height="6" fill="#ef4444" transform="rotate(-10 70 35)" />` } },
         { id: "king", name: "King", rarity: "Rare", weight: 100, color: "#a855f7", svg: { body: "#FFFFFF", head: "#FFFFFF", beak: "#FF9800", tail: "#E0E0E0", accessory: `<path d="M 60 15 L 65 5 L 70 15 L 80 20 L 70 25 L 65 35 L 60 25 L 50 20 Z" fill="#FFC107"/>` } },
+        { id: "pirate", name: "Pirate", rarity: "Rare", weight: 80, color: "#b45309", svg: { body: "#78350f", head: "#92400e", beak: "#f59e0b", tail: "#451a03", accessory: `<rect x="65" y="25" width="20" height="4" fill="#000" transform="rotate(20 75 27)"/><circle cx="82" cy="28" r="4.5" fill="#000"/>` } },
         { id: "wizard", name: "Wizard", rarity: "Rare", weight: 75, color: "#a855f7", svg: { body: "#311B92", head: "#512DA8", beak: "#FFC107", tail: "#1A237E", accessory: `<path d="M 50 25 L 70 -5 L 90 25 Z" fill="#673AB7" stroke="#FFC107" stroke-width="2"/>` } },
         { id: "vampire", name: "Vampire", rarity: "Epic", weight: 30, color: "#f43f5e", svg: { body: "#111827", head: "#111827", beak: "#9CA3AF", tail: "#000000", accessory: `<path d="M 85 42 L 87 46 L 89 42 Z" fill="#FFF"/><circle cx="75" cy="30" r="3" fill="#ef4444" />` } },
+        { id: "ghost", name: "Ghost", rarity: "Epic", weight: 40, color: "#d1d5db", svg: { body: "rgba(255,255,255,0.6)", head: "rgba(255,255,255,0.7)", beak: "rgba(156,163,175,0.8)", tail: "rgba(255,255,255,0.4)", accessory: "" } },
+        { id: "zombie", name: "Zombie", rarity: "Epic", weight: 35, color: "#22c55e", svg: { body: "#166534", head: "#15803d", beak: "#4b5563", tail: "#14532d", accessory: `<circle cx="68" cy="25" r="5" fill="#ef4444"/><rect x="50" y="45" width="8" height="15" fill="#064e3b" transform="rotate(45 50 45)"/>` } },
         { id: "cyborg", name: "Cyborg", rarity: "Epic", weight: 20, color: "#f43f5e", svg: { body: "#9E9E9E", head: "#E0E0E0", beak: "#757575", tail: "#616161", accessory: `<circle cx="75" cy="30" r="4" fill="#ff0000" /><rect x="60" y="28" width="10" height="4" fill="#424242"/>` } },
         { id: "glitch", name: "Glitch", rarity: "Legendary", weight: 5, color: "#fbbf24", svg: { body: "#000000", head: "#000000", beak: "#39FF14", tail: "#000000", accessory: `<rect x="40" y="50" width="10" height="10" fill="#FF00FF"/><rect x="60" y="60" width="15" height="5" fill="#39FF14"/><rect x="65" y="20" width="8" height="8" fill="#00FFFF"/>` } },
+        { id: "mecha", name: "Mecha", rarity: "Legendary", weight: 6, color: "#94a3b8", svg: { body: "#64748b", head: "#94a3b8", beak: "#cbd5e1", tail: "#475569", accessory: `<circle cx="45" cy="65" r="8" fill="#38bdf8"/><rect x="68" y="27" width="14" height="6" fill="#ef4444"/>` } },
         { id: "gold", name: "Solid Gold", rarity: "Legendary", weight: 4, color: "#fbbf24", svg: { body: "#FFC107", head: "#FFD54F", beak: "#FFE082", tail: "#FFB300", accessory: `<path d="M 60 15 L 65 5 L 70 15 L 80 20 L 70 25 L 65 35 L 60 25 L 50 20 Z" fill="#FFF"/>` } },
         { id: "alien", name: "Alien", rarity: "Mythical", weight: 1.5, color: "#ec4899", svg: { body: "#39FF14", head: "#39FF14", beak: "#111827", tail: "#22C55E", accessory: `<ellipse cx="75" cy="30" rx="6" ry="10" fill="#000" transform="rotate(20 75 30)"/>` } },
-        { id: "cosmic", name: "Cosmic", rarity: "Mythical", weight: 1, color: "#ec4899", svg: { body: "#1A237E", head: "#311B92", beak: "#00BCD4", tail: "#0D47A1", accessory: `<circle cx="40" cy="60" r="2" fill="#FFF"/><circle cx="55" cy="50" r="1.5" fill="#FFF"/><circle cx="30" cy="70" r="1" fill="#FFF"/>` } }
+        { id: "dragon", name: "Dragon", rarity: "Mythical", weight: 1.2, color: "#ef4444", svg: { body: "#b91c1c", head: "#dc2626", beak: "#fcd34d", tail: "#7f1d1d", accessory: `<path d="M 60 10 L 65 0 L 70 10 Z" fill="#f59e0b"/><path d="M 70 15 L 75 5 L 80 15 Z" fill="#f59e0b"/>` } },
+        { id: "cosmic", name: "Cosmic", rarity: "Mythical", weight: 1, color: "#ec4899", svg: { body: "#1A237E", head: "#311B92", beak: "#00BCD4", tail: "#0D47A1", accessory: `<circle cx="40" cy="60" r="2" fill="#FFF"/><circle cx="55" cy="50" r="1.5" fill="#FFF"/><circle cx="30" cy="70" r="1" fill="#FFF"/>` } },
+        { id: "void", name: "The Void", rarity: "Mythical", weight: 0.8, color: "#8b5cf6", svg: { body: "#000000", head: "#000000", beak: "#4c1d95", tail: "#000000", accessory: `<circle cx="45" cy="65" r="2" fill="#c4b5fd"/><circle cx="30" cy="55" r="1.5" fill="#c4b5fd"/><circle cx="55" cy="75" r="1.2" fill="#c4b5fd"/><circle cx="75" cy="30" r="3" fill="#8b5cf6" />` } }
     ];
+    
     const shopData = {
         shinyCharm: { id: 'shinyCharm', name: 'Shiny Charm', desc: 'Triples your chance of rolling a Shiny (15%).', cost: 300 },
         platPolish: { id: 'platPolish', name: 'Platinum Polish', desc: 'Doubles your chance of rolling a Platinum (4%).', cost: 1000 },
@@ -272,6 +288,29 @@
         hyperRoller: { id: 'hyperRoller', name: 'Hyper Roller', desc: 'Removes the rolling wait time.', cost: 1500 },
         twinEgg: { id: 'twinEgg', name: 'Twin Egg', desc: 'Unlocks rolling 2 ducks at once!', cost: 3000 }
     };
+
+    // --- Rarity Rank System for Backgrounds ---
+    const rarityRanks = { "Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4, "Mythical": 5 };
+
+    function updateDynamicBackground() {
+        if (!saveFile || !saveFile.unlocked || saveFile.unlocked.length === 0) {
+            document.body.className = 'bg-default';
+            return;
+        }
+        
+        let highestRank = -1;
+        let highestRarity = 'default';
+
+        saveFile.unlocked.forEach(id => {
+            const duck = duckData.find(d => d.id === id);
+            if (duck && rarityRanks[duck.rarity] > highestRank) {
+                highestRank = rarityRanks[duck.rarity];
+                highestRarity = duck.rarity;
+            }
+        });
+
+        document.body.className = 'bg-' + highestRarity;
+    }
 
     // --- Account Management System ---
     let accounts = JSON.parse(localStorage.getItem('duckV6Accounts')) || {};
@@ -308,11 +347,9 @@
     document.getElementById('login-btn').addEventListener('click', () => {
         accounts = JSON.parse(localStorage.getItem('duckV6Accounts')) || {}; 
         const u = userInp.value.trim();
-        // BUG FIX: .trim() removes invisible spaces from the password!
         const p = passInp.value.trim(); 
         if(!u) return showAuthError("Please enter a username.");
         
-        // BUG FIX: Also trim the saved password just in case it was saved badly before.
         if(accounts[u] && accounts[u].password.trim() === p) { startGameAs(u); } 
         else { showAuthError("Incorrect username or password."); }
     });
@@ -320,7 +357,6 @@
     document.getElementById('signup-btn').addEventListener('click', () => {
         accounts = JSON.parse(localStorage.getItem('duckV6Accounts')) || {}; 
         const u = userInp.value.trim();
-        // BUG FIX: Clean the password during signup too!
         const p = passInp.value.trim(); 
         if(!u || !p) return showAuthError("Username and password required to sign up.");
         if(accounts[u]) return showAuthError("Username already exists! Try logging in.");
@@ -335,6 +371,7 @@
         currentUser = null; saveFile = null; 
         gameScreen.style.display = 'none';
         authScreen.style.display = 'flex';
+        document.body.className = 'bg-default'; // Reset background on logout
         userInp.value = ''; passInp.value = ''; authErr.innerText = '';
         renderSavedAccounts(); 
     });
@@ -367,7 +404,6 @@
     function initGameUI() {
         elements.totalDucks.innerText = duckData.length;
         
-        // BUG FIX: Completely wipe the screen of the last person's ducks!
         elements.spots[0].style.display = 'flex';
         elements.spots[1].style.display = 'none';
         elements.spots.forEach(spot => {
@@ -380,7 +416,7 @@
         elements.displayArea.style.boxShadow = "inset 0 0 30px rgba(0,0,0,0.8)";
         
         updateUI(); 
-        buildShop(); // BUG FIX: Rebuild the shop right away so upgrades don't leak!
+        buildShop(); 
     }
 
     function saveGame() {
@@ -394,15 +430,16 @@
         elements.colCount.innerText = saveFile.unlocked.length;
         elements.coins.innerText = saveFile.coins;
         
-        // BUG FIX: Hide the double roll button if the new account doesn't own it!
         if (saveFile.upgrades.twinEgg) {
             elements.toggleContainer.style.display = 'block';
             elements.toggleBtn.innerText = saveFile.isDoubleMode ? "Mode: Double Roll (2x Cost)" : "Mode: Single Roll";
             elements.toggleBtn.style.background = saveFile.isDoubleMode ? "rgba(219, 39, 119, 0.8)" : "rgba(76, 29, 149, 0.8)";
         } else {
             elements.toggleContainer.style.display = 'none';
-            saveFile.isDoubleMode = false; // Turn it off just in case
+            saveFile.isDoubleMode = false;
         }
+
+        updateDynamicBackground(); // Run the background check every UI update
     }
 
     function generateSVGString(duck, isShiny, isPlatinum) {
@@ -530,12 +567,11 @@
     window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
     elements.toggleBtn.addEventListener('click', () => { saveFile.isDoubleMode = !saveFile.isDoubleMode; saveGame(); });
 
-    // BUG FIX: The Wipe Button now actually clears the active memory properly!
     document.getElementById('hard-reset-btn').addEventListener('click', () => {
         if(confirm(`DANGER! This deletes ALL data for player '${currentUser}'. Are you sure?`)) {
-            saveFile = createDefaultSave(); // Reset active memory
-            saveGame(); // Save it to the database
-            initGameUI(); // Reset the visuals
+            saveFile = createDefaultSave(); 
+            saveGame(); 
+            initGameUI(); 
             closeModal('settings-modal'); 
             alert("Account wiped successfully.");
         }
@@ -551,6 +587,5 @@
         setTimeout(() => { msg.innerText = ""; }, 3000);
     });
 </script>
-
 </body>
 </html>
