@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duck RNG Ultimate V10 - Mutations & Inventory</title>
+    <title>Duck RNG Ultimate V11 - Fusion & Anti-Cheat</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
 
@@ -11,20 +11,17 @@
             --container-bg: rgba(30, 41, 59, 0.85);
             --text-color: #f8fafc; --accent: #38bdf8;
             --gold: #fbbf24; --plat: #22d3ee; --holo: #c084fc;
+            --rad: #39FF14; --shadow: #4c1d95;
             --shop-bg: rgba(51, 65, 85, 0.8);
         }
         
         body {
-            font-family: 'Nunito', sans-serif;
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: var(--text-color);
+            font-family: 'Nunito', sans-serif; background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite; color: var(--text-color);
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0; overflow: hidden;
-            transition: background 2s ease-in-out;
+            height: 100vh; margin: 0; overflow: hidden; transition: background 2s ease-in-out;
         }
 
-        /* --- Dynamic Background Classes --- */
         body.bg-default, body.bg-Common { background-image: linear-gradient(-45deg, #0f172a, #1e1b4b, #064e3b, #1e3a8a); }
         body.bg-Uncommon { background-image: linear-gradient(-45deg, #0f172a, #0c4a6e, #164e63, #0284c7); }
         body.bg-Rare { background-image: linear-gradient(-45deg, #2e1065, #4c1d95, #3b0764, #1e1b4b); }
@@ -38,113 +35,80 @@
             background-color: var(--container-bg); backdrop-filter: blur(12px);
             padding: 30px; border-radius: 30px;
             box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.1);
-            text-align: center; width: 480px; position: relative;
+            text-align: center; width: 480px; position: relative; overflow: hidden;
         }
 
         h1 { margin-top: 0; margin-bottom: 20px; color: var(--accent); font-weight: 900; font-size: 32px; letter-spacing: 1px; text-shadow: 0 4px 10px rgba(56, 189, 248, 0.4); }
         
-        /* Auth Screen Styles */
         #auth-screen { display: flex; flex-direction: column; gap: 15px; }
         .auth-input { width: 90%; padding: 15px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15, 23, 42, 0.8); color: white; font-family: inherit; font-size: 16px; font-weight: bold; outline:none; text-align: center; margin: 0 auto;}
-        .auth-input:focus { border-color: var(--accent); }
-        .auth-btn { background: linear-gradient(to bottom, #38bdf8, #0284c7); color: white; font-size: 18px; padding: 15px; box-shadow: 0 8px 20px rgba(2, 132, 199, 0.5); text-transform: uppercase; width: 95%; margin: 10px auto 0; }
+        .auth-btn { background: linear-gradient(to bottom, #38bdf8, #0284c7); color: white; font-size: 18px; padding: 15px; box-shadow: 0 8px 20px rgba(2, 132, 199, 0.5); text-transform: uppercase; width: 95%; margin: 10px auto 0; border:none; border-radius:9999px; font-weight:bold; cursor:pointer;}
         .auth-btn:hover { background: linear-gradient(to bottom, #7dd3fc, #0369a1); transform: translateY(-2px); }
-        .auth-btn.signup { background: linear-gradient(to bottom, #a855f7, #7e22ce); box-shadow: 0 8px 20px rgba(126, 34, 206, 0.5); }
         #auth-error { color: #f87171; font-weight: bold; font-size: 14px; min-height: 20px; }
+        #saved-accounts-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .saved-account-badge { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 16px; border-radius: 9999px; cursor: pointer; font-size:14px; font-weight:bold;}
 
-        /* Saved Accounts Display */
-        #saved-accounts-container { display: none; margin-top: 5px; }
-        .saved-accounts-title { color: #cbd5e1; font-size: 14px; margin: 0 0 10px; font-weight: bold; }
-        #saved-accounts-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-height: 80px; overflow-y: auto;}
-        .saved-account-badge { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #e0f2fe; padding: 8px 16px; border-radius: 9999px; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
-        .saved-account-badge:hover { background: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
-
-        /* Game Screen Styles */
         #game-screen { display: none; flex-direction: column; }
-        .user-welcome { font-size: 14px; color: #cbd5e1; margin-bottom: 10px; font-weight: bold; }
-        
         .stats-board { display: flex; justify-content: space-between; background: rgba(15, 23, 42, 0.6); padding: 12px 20px; border-radius: 9999px; margin-bottom: 20px; font-size: 15px; font-weight: 700; border: 1px solid rgba(255,255,255,0.05); }
         .gold-text { color: var(--gold); }
 
-        /* Display Area */
-        #display-area { min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, rgba(51, 65, 85, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); border: 2px solid #475569; border-radius: 20px; margin-bottom: 20px; position: relative; transition: all 0.4s; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); padding: 20px 0; overflow: hidden; }
+        #display-area { min-height: 250px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, rgba(51, 65, 85, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); border: 2px solid #475569; border-radius: 20px; margin-bottom: 20px; position: relative; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); padding: 20px 0; }
         #duck-stage { display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; z-index: 2; }
-        .duck-spot { display: flex; flex-direction: column; align-items: center; width: 45%; position: relative; }
+        .duck-spot { display: flex; flex-direction: column; align-items: center; width: 45%; }
         .duck-svg { width: 110px; height: 110px; transition: all 0.3s; }
         
-        /* Animations & Mutations */
         .rolling .duck-svg { animation: shake 0.3s infinite; filter: brightness(0) drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
         .pop-reveal .duck-svg { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg) scale(0.9); } 25% { transform: translate(-1px, -2px) rotate(-5deg) scale(0.9); } 50% { transform: translate(-3px, 0px) rotate(5deg) scale(0.9); } 75% { transform: translate(3px, 2px) rotate(-5deg) scale(0.9); } 100% { transform: translate(1px, -1px) rotate(0deg) scale(0.9); } }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-5deg); } 50% { transform: translate(-3px, 0px) rotate(5deg); } 75% { transform: translate(3px, 2px) rotate(-5deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
         @keyframes popIn { 0% { transform: scale(0.2); opacity: 0; } 60% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
 
+        /* Mutations */
         .is-shiny { animation: shinyGlow 2s infinite alternate; }
         @keyframes shinyGlow { from { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 15px var(--gold)); } to { filter: drop-shadow(0 0 20px #fff) drop-shadow(0 0 35px #f59e0b); } }
-        
-        .is-platinum { animation: platGlow 2s infinite alternate; filter: grayscale(0.8) brightness(1.4) contrast(1.2); }
-        @keyframes platGlow { from { filter: grayscale(0.8) brightness(1.4) contrast(1.2) drop-shadow(0 0 10px #fff) drop-shadow(0 0 15px var(--plat)); } to { filter: grayscale(0.8) brightness(1.4) contrast(1.2) drop-shadow(0 0 20px #fff) drop-shadow(0 0 35px #06b6d4); } }
-        
-        /* New Holo Mutation */
+        .is-platinum { filter: grayscale(0.8) brightness(1.4) drop-shadow(0 0 15px var(--plat)); }
         .is-holo { animation: holoGlitch 2s infinite alternate linear; filter: saturate(2.5) contrast(1.2); }
-        @keyframes holoGlitch { 
-            0% { filter: saturate(2.5) contrast(1.2) hue-rotate(0deg) drop-shadow(0 0 15px #ff00ff); } 
-            50% { filter: saturate(2.5) contrast(1.2) hue-rotate(180deg) drop-shadow(0 0 15px #00ffff); } 
-            100% { filter: saturate(2.5) contrast(1.2) hue-rotate(360deg) drop-shadow(0 0 15px #ffff00); } 
-        }
+        @keyframes holoGlitch { 0% { filter: saturate(2.5) hue-rotate(0deg) drop-shadow(0 0 15px #ff00ff); } 100% { filter: saturate(2.5) hue-rotate(360deg) drop-shadow(0 0 15px #ffff00); } }
+        .is-rad { animation: radPulse 1.5s infinite alternate; filter: brightness(1.2) contrast(1.5); }
+        @keyframes radPulse { from { filter: brightness(1.2) drop-shadow(0 0 10px var(--rad)); } to { filter: brightness(1.5) drop-shadow(0 0 40px var(--rad)); } }
+        .is-shadow { filter: invert(0.9) hue-rotate(180deg) drop-shadow(0 0 20px var(--shadow)); animation: float 3s infinite ease-in-out;}
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-        /* Text & Tags */
-        .duck-name { font-size: 22px; font-weight: 900; margin: 10px 0 5px; min-height: 28px; opacity: 0; }
+        .duck-name { font-size: 22px; font-weight: 900; margin: 10px 0 5px; opacity: 0; }
         .duck-rarity { font-size: 13px; font-weight: 900; padding: 5px 12px; border-radius: 9999px; text-transform: uppercase; display: none; }
-        .tag-row { display: flex; gap: 5px; height: 22px; margin-bottom: 5px; justify-content: center; flex-wrap: wrap;}
+        .tag-row { display: flex; gap: 5px; height: 22px; margin-bottom: 5px; flex-wrap: wrap; justify-content:center;}
         .tag { padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 900; display: none; }
         .tag-new { background: #ef4444; color: white; }
-        .tag-shiny { background: linear-gradient(45deg, var(--gold), #f59e0b); color: #451a03; }
-        .tag-platinum { background: linear-gradient(45deg, #e0f2fe, var(--plat)); color: #082f49; }
+        .tag-shiny { background: var(--gold); color: #451a03; }
+        .tag-platinum { background: var(--plat); color: #082f49; }
         .tag-holo { background: linear-gradient(45deg, #ff00ff, #00ffff); color: #000; }
+        .tag-rad { background: var(--rad); color: #000; }
+        .tag-shadow { background: var(--shadow); color: #fff; }
 
-        /* Buttons */
         button { border: none; padding: 14px 20px; font-size: 16px; font-weight: 800; border-radius: 9999px; cursor: pointer; transition: all 0.2s; width: 100%; margin-bottom: 10px; font-family: 'Nunito', sans-serif;}
-        button:active { transform: scale(0.95); }
         #roll-btn { background: linear-gradient(to bottom, #38bdf8, #0284c7); color: white; font-size: 22px; padding: 18px; text-transform: uppercase;}
-        #roll-btn:hover { background: linear-gradient(to bottom, #7dd3fc, #0369a1); transform: translateY(-2px); }
-        #roll-btn:disabled { background: #475569; cursor: not-allowed; transform: none; color: #94a3b8; }
-        .btn-row { display: flex; gap: 10px; }
-        .sub-btn { background-color: rgba(51, 65, 85, 0.7); color: white; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 0; padding: 12px; font-size: 14px;}
+        #roll-btn:disabled { background: #475569; cursor: not-allowed; color: #94a3b8; }
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between;}
+        .sub-btn { background-color: rgba(51, 65, 85, 0.7); color: white; border: 1px solid rgba(255,255,255,0.1); width: 48%; margin-bottom: 0; padding: 12px; font-size: 14px;}
         .sub-btn:hover { background-color: rgba(71, 85, 105, 0.9); transform: translateY(-2px); }
-        #shop-btn { background-color: rgba(22, 101, 52, 0.7); }
-        #toggle-mode-container { margin-top: 15px; display: none; }
-        #toggle-mode-btn { background: rgba(76, 29, 149, 0.8); color: white; border: 1px solid #7c3aed; }
-
-        /* Modals & Collection Grid */
+        
         .modal { position: absolute; inset: 0; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); border-radius: 30px; display: none; flex-direction: column; padding: 25px; z-index: 10; }
-        .modal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; overflow-y: auto; flex-grow: 1; margin-bottom: 15px; padding-right: 5px; }
-        .duck-card { background: rgba(30, 41, 59, 0.8); border-radius: 16px; padding: 12px 5px; text-align: center; border: 2px solid rgba(255,255,255,0.05); position: relative; transition: transform 0.2s; }
-        .duck-card:hover { transform: translateY(-2px); }
+        .modal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; overflow-y: auto; flex-grow: 1; margin-bottom: 15px; }
+        .duck-card { background: rgba(30, 41, 59, 0.8); border-radius: 16px; padding: 12px 5px; text-align: center; border: 2px solid rgba(255,255,255,0.05); position: relative; }
         .duck-card.locked { filter: grayscale(100%) brightness(0.2); }
-        .card-name { font-size: 13px; font-weight: 800; margin-top: 8px; color: #f8fafc; }
-        .icon-tray { position: absolute; top: 4px; right: 6px; display: flex; gap: 3px; font-size: 14px; }
-        .duck-count { position: absolute; bottom: -8px; right: -8px; background: var(--accent); color: white; border-radius: 99px; padding: 2px 8px; font-size: 12px; font-weight: 900; border: 2px solid var(--container-bg); z-index: 5;}
-        
-        .shop-list { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex-grow: 1; margin-bottom: 15px; padding-right: 5px; }
-        .shop-item { background: var(--shop-bg); padding: 18px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
-        .shop-info { text-align: left; }
-        .shop-info h3 { margin: 0 0 5px 0; color: var(--gold); font-size: 18px; font-weight: 900;}
-        .shop-info p { margin: 0; font-size: 13px; color: #cbd5e1; font-weight: 600;}
-        .buy-btn { width: auto; padding: 10px 18px; background: var(--gold); color: #451a03; margin: 0; font-size: 14px; }
-        .buy-btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; transform: none;}
-        .buy-btn.owned { background: #15803d; color: white; cursor: default; }
-        
-        .settings-content { display: flex; flex-direction: column; gap: 15px; flex-grow: 1; text-align: left; margin-top: 10px; }
-        .setting-box { background: var(--shop-bg); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .setting-box h3 { margin: 0 0 10px 0; font-size: 18px; color: white;}
-        .code-input-row { display: flex; gap: 10px; }
-        #cheat-input { flex-grow: 1; padding: 12px; border-radius: 9999px; background: rgba(15, 23, 42, 0.8); color: white; font-weight: bold; outline:none; border:none;}
-        #cheat-submit { width: auto; background: var(--accent); color: white; margin: 0; padding: 10px 24px; }
-        .close-btn { background-color: #ef4444; color: white; margin-top: auto; }
+        .card-name { font-size: 13px; font-weight: 800; color: #f8fafc; margin-top: 5px;}
+        .duck-count { position: absolute; bottom: -8px; right: -8px; background: var(--accent); color: white; border-radius: 99px; padding: 2px 8px; font-size: 12px; font-weight: 900; z-index: 5;}
+        .fuse-btn { background: #10b981; color: white; font-size: 11px; padding: 4px; margin-top: 5px; width: 80%; border-radius: 5px;}
+        .fuse-btn:disabled { background: #475569; }
 
-        .particle { position: absolute; bottom: 10%; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; z-index: 1; animation: explode 1s ease-out forwards; }
-        @keyframes explode { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+        .shop-list { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex-grow: 1; margin-bottom: 15px; }
+        .shop-item { background: var(--shop-bg); padding: 15px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); text-align: left; }
+        .buy-btn { width: auto; padding: 10px 18px; background: var(--gold); color: #451a03; margin: 0; font-size: 14px; }
+        .buy-btn:disabled { background: #475569; color: #94a3b8; }
+        .buy-btn.owned { background: #15803d; color: white; }
+        
+        #anti-cheat-overlay { position: absolute; inset: 0; background: rgba(220, 38, 38, 0.9); border-radius: 30px; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 99; color: white; }
+        #anti-cheat-overlay h2 { font-size: 36px; margin: 0; font-weight: 900; }
+        #anti-cheat-overlay p { font-size: 18px; font-weight: bold; }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 10px; }
@@ -157,22 +121,15 @@
     
     <div id="auth-screen">
         <h1>Duck RNG Login</h1>
-        <p style="color: #94a3b8; font-size: 14px; margin-top:-15px;">Welcome! Log in or create a profile.</p>
         <input type="text" id="username-input" class="auth-input" placeholder="Username" autocomplete="off">
         <input type="password" id="password-input" class="auth-input" placeholder="Password">
         <div id="auth-error"></div>
-        <button id="login-btn" class="auth-btn">Log In</button>
-        <button id="signup-btn" class="auth-btn signup">Sign Up New Account</button>
-        <div id="saved-accounts-container">
-            <p class="saved-accounts-title">Saved Profiles</p>
-            <div id="saved-accounts-list"></div>
-        </div>
+        <button id="login-btn" class="auth-btn">Log In / Sign Up</button>
+        <div id="saved-accounts-list"></div>
     </div>
 
     <div id="game-screen">
         <h1>Duck RNG Ultimate</h1>
-        <div class="user-welcome">Logged in as: <span id="current-username-display" style="color:var(--accent);">Player</span></div>
-        
         <div class="stats-board">
             <span>Rolls: <span id="roll-count" style="color:var(--accent)">0</span></span>
             <span>Flock: <span id="collection-count" style="color:#a855f7">0</span>/<span id="total-ducks">0</span></span>
@@ -183,15 +140,7 @@
             <div id="duck-stage">
                 <div class="duck-spot" id="spot-1">
                     <div class="tag-row">
-                        <span class="tag tag-new">NEW!</span><span class="tag tag-shiny">✨ SHINY</span><span class="tag tag-platinum">💎 PLAT</span><span class="tag tag-holo">🌌 HOLO</span>
-                    </div>
-                    <div class="svg-container"></div>
-                    <div class="duck-name" style="color:#94a3b8">Ready</div>
-                    <div class="duck-rarity"></div>
-                </div>
-                <div class="duck-spot" id="spot-2" style="display:none;">
-                    <div class="tag-row">
-                        <span class="tag tag-new">NEW!</span><span class="tag tag-shiny">✨ SHINY</span><span class="tag tag-platinum">💎 PLAT</span><span class="tag tag-holo">🌌 HOLO</span>
+                        <span class="tag tag-new">NEW!</span><span class="tag tag-shiny">✨ SHINY</span><span class="tag tag-platinum">💎 PLAT</span><span class="tag tag-holo">🌌 HOLO</span><span class="tag tag-rad">☢️ RAD</span><span class="tag tag-shadow">🌑 SHADOW</span>
                     </div>
                     <div class="svg-container"></div>
                     <div class="duck-name" style="color:#94a3b8">Ready</div>
@@ -205,370 +154,331 @@
         <div class="btn-row">
             <button id="collection-btn" class="sub-btn">🎒 Collection</button>
             <button id="shop-btn" class="sub-btn">🛒 Quack Shop</button>
+            <button id="fusion-btn" class="sub-btn" style="background:#059669;">🧪 Fusion Lab</button>
             <button id="settings-btn" class="sub-btn">⚙️ Settings</button>
         </div>
 
-        <div id="toggle-mode-container">
-            <button id="toggle-mode-btn">Mode: Single Roll</button>
-        </div>
-
         <div id="collection-modal" class="modal">
-            <h2 style="margin-top:0; color:var(--accent); font-weight:900;">Duck Collection</h2>
+            <h2 style="color:var(--accent);">Collection</h2>
             <div id="collection-grid" class="modal-grid"></div>
-            <button class="close-btn" onclick="closeModal('collection-modal')">Close Collection</button>
+            <button onclick="closeModal('collection-modal')" style="background:#ef4444; color:white;">Close</button>
         </div>
 
         <div id="shop-modal" class="modal">
-            <h2 style="margin-top:0; color:var(--gold); font-weight:900;">Quack Shop</h2>
+            <h2 style="color:var(--gold);">Quack Shop</h2>
             <div id="shop-list" class="shop-list"></div>
-            <button class="close-btn" onclick="closeModal('shop-modal')">Close Shop</button>
+            <button onclick="closeModal('shop-modal')" style="background:#ef4444; color:white;">Close</button>
+        </div>
+
+        <div id="fusion-modal" class="modal">
+            <h2 style="color:#10b981;">Fusion Lab</h2>
+            <p style="font-size:13px; font-weight:bold; margin-top:-10px;">Cost: 10 Duplicates. Result: +1 Tier Guaranteed!</p>
+            <div id="fusion-grid" class="modal-grid"></div>
+            <button onclick="closeModal('fusion-modal')" style="background:#ef4444; color:white;">Close</button>
         </div>
 
         <div id="settings-modal" class="modal">
-            <h2 style="margin-top:0; color:#cbd5e1; font-weight:900;">Settings</h2>
-            <div class="settings-content">
-                <div class="setting-box">
-                    <h3>Account Profile</h3>
-                    <button id="logout-btn" style="background:#475569; margin:0;">Log Out</button>
-                </div>
-                <div class="setting-box">
-                    <h3>Secret Codes</h3>
-                    <div class="code-input-row">
-                        <input type="text" id="cheat-input" placeholder="Enter code..." autocomplete="off">
-                        <button id="cheat-submit">Enter</button>
-                    </div>
-                    <div id="cheat-message" style="font-size:14px; margin-top:10px; font-weight:800; text-align:center;"></div>
-                </div>
-                <div class="setting-box" style="border-color: rgba(220, 38, 38, 0.4); background: rgba(69, 10, 10, 0.6);">
-                    <h3 style="color: #fca5a5;">Danger Zone</h3>
-                    <button id="hard-reset-btn" style="background:rgba(127, 29, 29, 0.8); color: white; margin:0;">Wipe Account Data</button>
-                </div>
-            </div>
-            <button class="close-btn" onclick="closeModal('settings-modal')">Close Settings</button>
+            <h2>Settings</h2>
+            <button id="logout-btn" style="background:#475569; color:white;">Log Out</button>
+            <button onclick="closeModal('settings-modal')" style="background:#ef4444; color:white; margin-top:auto;">Close</button>
+        </div>
+
+        <div id="anti-cheat-overlay">
+            <h2>🚨 AUTO-CLICKER DETECTED 🚨</h2>
+            <p>Chill out! Game locked for 5 seconds.</p>
         </div>
     </div>
 </div>
 
 <script>
-    // --- 23 Ducks Now! ---
+    // --- 43 Ducks (Expanded!) ---
     const duckData = [
         { id: "mallard", name: "Mallard", rarity: "Common", weight: 500, color: "#a3e635", svg: { body: "#8D6E63", head: "#4CAF50", beak: "#FFB300", tail: "#795548", accessory: "" } },
         { id: "rubber", name: "Rubber", rarity: "Common", weight: 400, color: "#a3e635", svg: { body: "#FFEB3B", head: "#FFEB3B", beak: "#FF9800", tail: "#FDD835", accessory: "" } },
+        { id: "brown", name: "Brown Duck", rarity: "Common", weight: 350, color: "#a3e635", svg: { body: "#8B4513", head: "#8B4513", beak: "#D2691E", tail: "#5C4033", accessory: "" } },
+        { id: "white", name: "White Duck", rarity: "Common", weight: 350, color: "#a3e635", svg: { body: "#FFFFFF", head: "#FFFFFF", beak: "#FFD700", tail: "#F5F5F5", accessory: "" } },
+        { id: "muddy", name: "Muddy", rarity: "Common", weight: 300, color: "#a3e635", svg: { body: "#5C4033", head: "#FFEB3B", beak: "#FF9800", tail: "#3E2723", accessory: "" } },
+        
         { id: "cotton", name: "Cotton Candy", rarity: "Uncommon", weight: 250, color: "#38bdf8", svg: { body: "#F48FB1", head: "#81D4FA", beak: "#FFCC80", tail: "#CE93D8", accessory: "" } },
-        { id: "chef", name: "Chef", rarity: "Uncommon", weight: 220, color: "#f8fafc", svg: { body: "#f1f5f9", head: "#f8fafc", beak: "#fbbf24", tail: "#e2e8f0", accessory: `<path d="M 60 15 Q 70 -5 80 15 Z" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>` } },
+        { id: "chef", name: "Chef", rarity: "Uncommon", weight: 220, color: "#38bdf8", svg: { body: "#f1f5f9", head: "#f8fafc", beak: "#fbbf24", tail: "#e2e8f0", accessory: `<path d="M 60 15 Q 70 -5 80 15 Z" fill="#fff" stroke="#cbd5e1"/>` } },
         { id: "ninja", name: "Ninja", rarity: "Uncommon", weight: 200, color: "#38bdf8", svg: { body: "#212121", head: "#212121", beak: "#424242", tail: "#000000", accessory: `<rect x="52" y="25" width="36" height="6" fill="#ef4444" transform="rotate(-10 70 35)" />` } },
-        { id: "cactus", name: "Cactus", rarity: "Uncommon", weight: 180, color: "#22c55e", svg: { body: "#15803d", head: "#16a34a", beak: "#fbbf24", tail: "#14532d", accessory: `<line x1="45" y1="50" x2="40" y2="45" stroke="#fff" stroke-width="2"/><line x1="60" y1="60" x2="65" y2="55" stroke="#fff" stroke-width="2"/><line x1="75" y1="15" x2="80" y2="10" stroke="#fff" stroke-width="2"/>` } },
+        { id: "cactus", name: "Cactus", rarity: "Uncommon", weight: 180, color: "#38bdf8", svg: { body: "#15803d", head: "#16a34a", beak: "#fbbf24", tail: "#14532d", accessory: `<line x1="45" y1="50" x2="40" y2="45" stroke="#fff"/><line x1="60" y1="60" x2="65" y2="55" stroke="#fff"/>` } },
+        { id: "police", name: "Officer", rarity: "Uncommon", weight: 180, color: "#38bdf8", svg: { body: "#1E3A8A", head: "#FFEB3B", beak: "#FF9800", tail: "#172554", accessory: `<rect x="55" y="10" width="30" height="10" fill="#1E3A8A"/><circle cx="70" cy="15" r="3" fill="#FBBF24"/>` } },
+        { id: "cowboy", name: "Cowboy", rarity: "Uncommon", weight: 160, color: "#38bdf8", svg: { body: "#D2B48C", head: "#FFEB3B", beak: "#FF9800", tail: "#8B4513", accessory: `<ellipse cx="70" cy="15" rx="20" ry="5" fill="#8B4513"/><rect x="60" y="5" width="20" height="10" fill="#8B4513"/>` } },
+
         { id: "king", name: "King", rarity: "Rare", weight: 100, color: "#a855f7", svg: { body: "#FFFFFF", head: "#FFFFFF", beak: "#FF9800", tail: "#E0E0E0", accessory: `<path d="M 60 15 L 65 5 L 70 15 L 80 20 L 70 25 L 65 35 L 60 25 L 50 20 Z" fill="#FFC107"/>` } },
-        { id: "pirate", name: "Pirate", rarity: "Rare", weight: 80, color: "#b45309", svg: { body: "#78350f", head: "#92400e", beak: "#f59e0b", tail: "#451a03", accessory: `<rect x="65" y="25" width="20" height="4" fill="#000" transform="rotate(20 75 27)"/><circle cx="82" cy="28" r="4.5" fill="#000"/>` } },
-        { id: "wizard", name: "Wizard", rarity: "Rare", weight: 75, color: "#a855f7", svg: { body: "#311B92", head: "#512DA8", beak: "#FFC107", tail: "#1A237E", accessory: `<path d="M 50 25 L 70 -5 L 90 25 Z" fill="#673AB7" stroke="#FFC107" stroke-width="2"/>` } },
-        { id: "bread", name: "Loaf", rarity: "Rare", weight: 65, color: "#d97706", svg: { body: "#b45309", head: "#d97706", beak: "#fcd34d", tail: "#92400e", accessory: `<path d="M 35 45 Q 45 35 55 45" stroke="#78350f" fill="none" stroke-width="2"/><path d="M 50 55 Q 60 45 70 55" stroke="#78350f" fill="none" stroke-width="2"/>` } },
-        { id: "vampire", name: "Vampire", rarity: "Epic", weight: 30, color: "#f43f5e", svg: { body: "#111827", head: "#111827", beak: "#9CA3AF", tail: "#000000", accessory: `<path d="M 85 42 L 87 46 L 89 42 Z" fill="#FFF"/><circle cx="75" cy="30" r="3" fill="#ef4444" />` } },
-        { id: "ghost", name: "Ghost", rarity: "Epic", weight: 40, color: "#d1d5db", svg: { body: "rgba(255,255,255,0.6)", head: "rgba(255,255,255,0.7)", beak: "rgba(156,163,175,0.8)", tail: "rgba(255,255,255,0.4)", accessory: "" } },
-        { id: "zombie", name: "Zombie", rarity: "Epic", weight: 35, color: "#22c55e", svg: { body: "#166534", head: "#15803d", beak: "#4b5563", tail: "#14532d", accessory: `<circle cx="68" cy="25" r="5" fill="#ef4444"/><rect x="50" y="45" width="8" height="15" fill="#064e3b" transform="rotate(45 50 45)"/>` } },
-        { id: "cyborg", name: "Cyborg", rarity: "Epic", weight: 20, color: "#f43f5e", svg: { body: "#9E9E9E", head: "#E0E0E0", beak: "#757575", tail: "#616161", accessory: `<circle cx="75" cy="30" r="4" fill="#ff0000" /><rect x="60" y="28" width="10" height="4" fill="#424242"/>` } },
-        { id: "glitch", name: "Glitch", rarity: "Legendary", weight: 5, color: "#fbbf24", svg: { body: "#000000", head: "#000000", beak: "#39FF14", tail: "#000000", accessory: `<rect x="40" y="50" width="10" height="10" fill="#FF00FF"/><rect x="60" y="60" width="15" height="5" fill="#39FF14"/><rect x="65" y="20" width="8" height="8" fill="#00FFFF"/>` } },
-        { id: "mecha", name: "Mecha", rarity: "Legendary", weight: 6, color: "#94a3b8", svg: { body: "#64748b", head: "#94a3b8", beak: "#cbd5e1", tail: "#475569", accessory: `<circle cx="45" cy="65" r="8" fill="#38bdf8"/><rect x="68" y="27" width="14" height="6" fill="#ef4444"/>` } },
-        { id: "gold", name: "Solid Gold", rarity: "Legendary", weight: 4, color: "#fbbf24", svg: { body: "#FFC107", head: "#FFD54F", beak: "#FFE082", tail: "#FFB300", accessory: `<path d="M 60 15 L 65 5 L 70 15 L 80 20 L 70 25 L 65 35 L 60 25 L 50 20 Z" fill="#FFF"/>` } },
-        { id: "diamond", name: "Diamond", rarity: "Legendary", weight: 3.5, color: "#22d3ee", svg: { body: "#cffafe", head: "#67e8f9", beak: "#06b6d4", tail: "#a5f3fc", accessory: `<path d="M 35 60 L 45 45 L 55 60 Z" fill="#fff" opacity="0.6"/><path d="M 65 25 L 70 15 L 75 25 Z" fill="#fff" opacity="0.6"/>` } },
+        { id: "pirate", name: "Pirate", rarity: "Rare", weight: 80, color: "#a855f7", svg: { body: "#78350f", head: "#92400e", beak: "#f59e0b", tail: "#451a03", accessory: `<rect x="65" y="25" width="20" height="4" fill="#000" transform="rotate(20 75 27)"/>` } },
+        { id: "wizard", name: "Wizard", rarity: "Rare", weight: 75, color: "#a855f7", svg: { body: "#311B92", head: "#512DA8", beak: "#FFC107", tail: "#1A237E", accessory: `<path d="M 50 25 L 70 -5 L 90 25 Z" fill="#673AB7"/>` } },
+        { id: "bread", name: "Loaf", rarity: "Rare", weight: 65, color: "#a855f7", svg: { body: "#b45309", head: "#d97706", beak: "#fcd34d", tail: "#92400e", accessory: `` } },
+        { id: "astronaut", name: "Astro", rarity: "Rare", weight: 60, color: "#a855f7", svg: { body: "#F3F4F6", head: "#9CA3AF", beak: "#FCD34D", tail: "#D1D5DB", accessory: `<circle cx="70" cy="35" r="20" fill="rgba(255,255,255,0.5)" stroke="#60A5FA"/>` } },
+        { id: "scuba", name: "Scuba", rarity: "Rare", weight: 55, color: "#a855f7", svg: { body: "#0284C7", head: "#0369A1", beak: "#F59E0B", tail: "#0C4A6E", accessory: `<rect x="55" y="25" width="25" height="10" fill="#3B82F6" rx="5"/>` } },
+
+        { id: "vampire", name: "Vampire", rarity: "Epic", weight: 30, color: "#f43f5e", svg: { body: "#111827", head: "#111827", beak: "#9CA3AF", tail: "#000000", accessory: `<circle cx="75" cy="30" r="3" fill="#ef4444" />` } },
+        { id: "ghost", name: "Ghost", rarity: "Epic", weight: 30, color: "#f43f5e", svg: { body: "rgba(255,255,255,0.6)", head: "rgba(255,255,255,0.7)", beak: "rgba(156,163,175,0.8)", tail: "rgba(255,255,255,0.4)", accessory: "" } },
+        { id: "zombie", name: "Zombie", rarity: "Epic", weight: 25, color: "#f43f5e", svg: { body: "#166534", head: "#15803d", beak: "#4b5563", tail: "#14532d", accessory: `<circle cx="68" cy="25" r="5" fill="#ef4444"/>` } },
+        { id: "cyborg", name: "Cyborg", rarity: "Epic", weight: 20, color: "#f43f5e", svg: { body: "#9E9E9E", head: "#E0E0E0", beak: "#757575", tail: "#616161", accessory: `<circle cx="75" cy="30" r="4" fill="#ff0000" />` } },
+        { id: "toxic", name: "Toxic", rarity: "Epic", weight: 15, color: "#f43f5e", svg: { body: "#84CC16", head: "#A3E635", beak: "#4D7C0F", tail: "#65A30D", accessory: `<circle cx="40" cy="60" r="5" fill="#BEF264"/>` } },
+        { id: "frozen", name: "Frozen", rarity: "Epic", weight: 15, color: "#f43f5e", svg: { body: "#BAE6FD", head: "#7DD3FC", beak: "#38BDF8", tail: "#E0F2FE", accessory: `<path d="M 40 40 L 45 30 L 50 40 Z" fill="#FFF"/>` } },
+
+        { id: "glitch", name: "Glitch", rarity: "Legendary", weight: 5, color: "#fbbf24", svg: { body: "#000000", head: "#000000", beak: "#39FF14", tail: "#000000", accessory: `<rect x="40" y="50" width="10" height="10" fill="#FF00FF"/>` } },
+        { id: "mecha", name: "Mecha", rarity: "Legendary", weight: 5, color: "#fbbf24", svg: { body: "#64748b", head: "#94a3b8", beak: "#cbd5e1", tail: "#475569", accessory: `<circle cx="45" cy="65" r="8" fill="#38bdf8"/>` } },
+        { id: "gold", name: "Solid Gold", rarity: "Legendary", weight: 4, color: "#fbbf24", svg: { body: "#FFC107", head: "#FFD54F", beak: "#FFE082", tail: "#FFB300", accessory: `` } },
+        { id: "diamond", name: "Diamond", rarity: "Legendary", weight: 3.5, color: "#fbbf24", svg: { body: "#cffafe", head: "#67e8f9", beak: "#06b6d4", tail: "#a5f3fc", accessory: `` } },
+        { id: "magma", name: "Magma", rarity: "Legendary", weight: 3, color: "#fbbf24", svg: { body: "#B91C1C", head: "#DC2626", beak: "#FEF08A", tail: "#7F1D1D", accessory: `<path d="M 40 50 Q 50 30 60 50 Z" fill="#F59E0B"/>` } },
+        { id: "crystal", name: "Crystal", rarity: "Legendary", weight: 2.5, color: "#fbbf24", svg: { body: "#FBCFE8", head: "#F9A8D4", beak: "#F472B6", tail: "#FDF2F8", accessory: `<path d="M 40 60 L 50 40 L 60 60 Z" fill="#FFF" opacity="0.6"/>` } },
+
         { id: "alien", name: "Alien", rarity: "Mythical", weight: 1.5, color: "#ec4899", svg: { body: "#39FF14", head: "#39FF14", beak: "#111827", tail: "#22C55E", accessory: `<ellipse cx="75" cy="30" rx="6" ry="10" fill="#000" transform="rotate(20 75 30)"/>` } },
-        { id: "dragon", name: "Dragon", rarity: "Mythical", weight: 1.2, color: "#ef4444", svg: { body: "#b91c1c", head: "#dc2626", beak: "#fcd34d", tail: "#7f1d1d", accessory: `<path d="M 60 10 L 65 0 L 70 10 Z" fill="#f59e0b"/><path d="M 70 15 L 75 5 L 80 15 Z" fill="#f59e0b"/>` } },
-        { id: "cosmic", name: "Cosmic", rarity: "Mythical", weight: 1, color: "#ec4899", svg: { body: "#1A237E", head: "#311B92", beak: "#00BCD4", tail: "#0D47A1", accessory: `<circle cx="40" cy="60" r="2" fill="#FFF"/><circle cx="55" cy="50" r="1.5" fill="#FFF"/><circle cx="30" cy="70" r="1" fill="#FFF"/>` } },
-        { id: "void", name: "The Void", rarity: "Mythical", weight: 0.8, color: "#8b5cf6", svg: { body: "#000000", head: "#000000", beak: "#4c1d95", tail: "#000000", accessory: `<circle cx="45" cy="65" r="2" fill="#c4b5fd"/><circle cx="30" cy="55" r="1.5" fill="#c4b5fd"/><circle cx="55" cy="75" r="1.2" fill="#c4b5fd"/><circle cx="75" cy="30" r="3" fill="#8b5cf6" />` } },
-        { id: "quantum", name: "Quantum", rarity: "Mythical", weight: 0.5, color: "#0ea5e9", svg: { body: "rgba(14, 165, 233, 0.5)", head: "rgba(56, 189, 248, 0.7)", beak: "#fff", tail: "rgba(2, 132, 199, 0.4)", accessory: `<circle cx="50" cy="50" r="35" stroke="#bae6fd" stroke-width="1" fill="none" stroke-dasharray="5,5"/><circle cx="70" cy="35" r="25" stroke="#e0f2fe" stroke-width="1" fill="none" stroke-dasharray="2,4"/>` } }
+        { id: "dragon", name: "Dragon", rarity: "Mythical", weight: 1.2, color: "#ec4899", svg: { body: "#b91c1c", head: "#dc2626", beak: "#fcd34d", tail: "#7f1d1d", accessory: `<path d="M 60 10 L 65 0 L 70 10 Z" fill="#f59e0b"/>` } },
+        { id: "cosmic", name: "Cosmic", rarity: "Mythical", weight: 1, color: "#ec4899", svg: { body: "#1A237E", head: "#311B92", beak: "#00BCD4", tail: "#0D47A1", accessory: `<circle cx="40" cy="60" r="2" fill="#FFF"/>` } },
+        { id: "void", name: "The Void", rarity: "Mythical", weight: 0.8, color: "#ec4899", svg: { body: "#000000", head: "#000000", beak: "#4c1d95", tail: "#000000", accessory: `<circle cx="45" cy="65" r="2" fill="#c4b5fd"/>` } },
+        { id: "quantum", name: "Quantum", rarity: "Mythical", weight: 0.5, color: "#ec4899", svg: { body: "rgba(14, 165, 233, 0.5)", head: "rgba(56, 189, 248, 0.7)", beak: "#fff", tail: "rgba(2, 132, 199, 0.4)", accessory: `<circle cx="50" cy="50" r="35" stroke="#bae6fd" fill="none" stroke-dasharray="5,5"/>` } },
+        { id: "nebula", name: "Nebula", rarity: "Mythical", weight: 0.3, color: "#ec4899", svg: { body: "url(#nebula-grad)", head: "#9333EA", beak: "#F0ABFC", tail: "#4C1D95", accessory: `<defs><linearGradient id="nebula-grad"><stop offset="0%" stop-color="#4C1D95"/><stop offset="100%" stop-color="#DB2777"/></linearGradient></defs>` } },
+        { id: "seraphim", name: "Seraphim", rarity: "Mythical", weight: 0.2, color: "#ec4899", svg: { body: "#FEF08A", head: "#FEF9C3", beak: "#F59E0B", tail: "#FFF", accessory: `<path d="M 10 30 Q 30 10 50 30 Z" fill="#FFF"/><path d="M 10 60 Q 30 40 50 60 Z" fill="#FFF"/>` } },
+        { id: "cthulhu", name: "Cthulhu", rarity: "Mythical", weight: 0.1, color: "#ec4899", svg: { body: "#064E3B", head: "#065F46", beak: "#047857", tail: "#022C22", accessory: `<path d="M 60 40 Q 65 60 60 80" stroke="#047857" stroke-width="3" fill="none"/><path d="M 70 40 Q 75 60 70 80" stroke="#047857" stroke-width="3" fill="none"/>` } }
     ];
     
-    // --- Updated Shop Data ---
     const shopData = {
-        coinMagnet: { id: 'coinMagnet', name: 'Coin Magnet', desc: 'Doubles all coin rewards from rolling.', cost: 150 },
-        shinyCharm: { id: 'shinyCharm', name: 'Shiny Charm', desc: 'Triples your chance of rolling a Shiny (15%).', cost: 300 },
-        platPolish: { id: 'platPolish', name: 'Platinum Polish', desc: 'Doubles your chance of rolling a Platinum (4%).', cost: 1000 },
-        holoMatrix: { id: 'holoMatrix', name: 'Holo Matrix', desc: 'Doubles chance of the Holo mutation (2%).', cost: 2500 },
-        luckyLoaf: { id: 'luckyLoaf', name: 'Lucky Loaf', desc: 'Rare+ ducks are 2x more common.', cost: 800 },
-        hyperRoller: { id: 'hyperRoller', name: 'Hyper Roller', desc: 'Removes the rolling wait time.', cost: 1500 },
-        twinEgg: { id: 'twinEgg', name: 'Twin Egg', desc: 'Unlocks rolling 2 ducks at once!', cost: 3000 }
+        coinMagnet: { id: 'coinMagnet', name: 'Coin Magnet', desc: 'Doubles coins from rolling.', cost: 150 },
+        shinyCharm: { id: 'shinyCharm', name: 'Shiny Charm', desc: 'Triples Shiny chance (15%).', cost: 300 },
+        platPolish: { id: 'platPolish', name: 'Platinum Polish', desc: 'Doubles Platinum chance (4%).', cost: 1000 },
+        holoMatrix: { id: 'holoMatrix', name: 'Holo Matrix', desc: 'Doubles Holo chance (2%).', cost: 2500 },
+        radDetector: { id: 'radDetector', name: 'Rad Detector', desc: 'Doubles Radioactive chance (1%).', cost: 5000 },
+        voidOrb: { id: 'voidOrb', name: 'Void Orb', desc: 'Triples Shadow chance (0.3%).', cost: 10000 },
+        clickGrease: { id: 'clickGrease', name: 'Click Grease', desc: 'Lowers base roll cooldown.', cost: 1500 }
     };
 
     const rarityRanks = { "Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4, "Mythical": 5 };
 
-    function updateDynamicBackground() {
-        if (!saveFile || !saveFile.unlocked || saveFile.unlocked.length === 0) { document.body.className = 'bg-default'; return; }
+    let accounts = JSON.parse(localStorage.getItem('duckV11Accounts')) || {};
+    let currentUser = null; let saveFile = null;
+
+    // --- Show Saved Accounts on Login Screen ---
+    function renderSavedAccounts() {
+        const list = document.getElementById('saved-accounts-list');
+        list.innerHTML = '';
+        for (let user in accounts) {
+            let btn = document.createElement('div');
+            btn.className = 'saved-account-badge';
+            btn.innerText = "👤 " + user;
+            btn.onclick = () => {
+                document.getElementById('username-input').value = user;
+                document.getElementById('password-input').value = accounts[user].password;
+            };
+            list.appendChild(btn);
+        }
+    }
+    renderSavedAccounts();
+
+    function createDefaultSave() {
+        return { 
+            unlocked: [], inventory: {}, rolls: 0, coins: 0, upgrades: {},
+            mutations: { shiny: [], platinum: [], holo: [], rad: [], shadow: [] }
+        };
+    }
+
+    // --- Authentication ---
+    const userInp = document.getElementById('username-input');
+    const passInp = document.getElementById('password-input');
+    document.getElementById('login-btn').addEventListener('click', () => {
+        const u = userInp.value.trim(); const p = passInp.value.trim(); 
+        if(!u || !p) return document.getElementById('auth-error').innerText = "Enter username and password.";
+        if(!accounts[u]) accounts[u] = { password: p, saveData: createDefaultSave() };
+        if(accounts[u].password === p) {
+            currentUser = u; saveFile = accounts[u].saveData;
+            if(!saveFile.mutations) saveFile.mutations = { shiny: [], platinum: [], holo: [], rad: [], shadow: [] };
+            if(!saveFile.mutations.rad) saveFile.mutations.rad = []; if(!saveFile.mutations.shadow) saveFile.mutations.shadow = [];
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            initGameUI();
+        } else { document.getElementById('auth-error').innerText = "Incorrect password."; }
+    });
+
+    // --- Core Game Logic ---
+    function saveGame() { accounts[currentUser].saveData = saveFile; localStorage.setItem('duckV11Accounts', JSON.stringify(accounts)); updateUI(); }
+    
+    function updateUI() {
+        document.getElementById('roll-count').innerText = saveFile.rolls;
+        document.getElementById('collection-count').innerText = saveFile.unlocked.length;
+        document.getElementById('coin-count').innerText = saveFile.coins;
+        
+        // Background
         let highestRank = -1, highestRarity = 'default';
         saveFile.unlocked.forEach(id => {
-            const duck = duckData.find(d => d.id === id);
-            if (duck && rarityRanks[duck.rarity] > highestRank) { highestRank = rarityRanks[duck.rarity]; highestRarity = duck.rarity; }
+            const d = duckData.find(x => x.id === id);
+            if (d && rarityRanks[d.rarity] > highestRank) { highestRank = rarityRanks[d.rarity]; highestRarity = d.rarity; }
         });
         document.body.className = 'bg-' + highestRarity;
     }
 
-    let accounts = JSON.parse(localStorage.getItem('duckV6Accounts')) || {};
-    let currentUser = null; let saveFile = null;
-
-    function createDefaultSave() {
-        return { 
-            unlocked: [], shinyUnlocked: [], platinumUnlocked: [], holographicUnlocked: [], 
-            inventory: {}, rolls: 0, coins: 0, upgrades: {}, isDoubleMode: false 
-        };
-    }
-
-    const authScreen = document.getElementById('auth-screen');
-    const gameScreen = document.getElementById('game-screen');
-    const userInp = document.getElementById('username-input');
-    const passInp = document.getElementById('password-input');
-    const authErr = document.getElementById('auth-error');
-
-    function renderSavedAccounts() {
-        const container = document.getElementById('saved-accounts-container');
-        const list = document.getElementById('saved-accounts-list');
-        const usernames = Object.keys(accounts);
-        if (usernames.length === 0) { container.style.display = 'none'; return; }
-        container.style.display = 'block'; list.innerHTML = '';
-        usernames.forEach(uname => {
-            const badge = document.createElement('div'); badge.className = 'saved-account-badge'; badge.innerText = uname;
-            badge.onclick = () => { userInp.value = uname; passInp.value = ''; passInp.focus(); authErr.innerText = ''; };
-            list.appendChild(badge);
-        });
-    }
-    renderSavedAccounts();
-
-    document.getElementById('login-btn').addEventListener('click', () => {
-        accounts = JSON.parse(localStorage.getItem('duckV6Accounts')) || {}; 
-        const u = userInp.value.trim(); const p = passInp.value.trim(); 
-        if(!u) return showAuthError("Please enter a username.");
-        if(accounts[u] && accounts[u].password.trim() === p) { startGameAs(u); } else { showAuthError("Incorrect username or password."); }
-    });
-
-    document.getElementById('signup-btn').addEventListener('click', () => {
-        accounts = JSON.parse(localStorage.getItem('duckV6Accounts')) || {}; 
-        const u = userInp.value.trim(); const p = passInp.value.trim(); 
-        if(!u || !p) return showAuthError("Username and password required to sign up.");
-        if(accounts[u]) return showAuthError("Username already exists! Try logging in.");
-        accounts[u] = { password: p, saveData: createDefaultSave() };
-        localStorage.setItem('duckV6Accounts', JSON.stringify(accounts));
-        renderSavedAccounts(); startGameAs(u);
-    });
-
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        closeModal('settings-modal'); currentUser = null; saveFile = null; 
-        gameScreen.style.display = 'none'; authScreen.style.display = 'flex';
-        document.body.className = 'bg-default'; userInp.value = ''; passInp.value = ''; authErr.innerText = '';
-        renderSavedAccounts(); 
-    });
-
-    function showAuthError(msg) { authErr.innerText = msg; }
-
-    function startGameAs(username) {
-        currentUser = username; saveFile = accounts[username].saveData;
-        
-        // Backwards compatibility for old saves
-        if(!saveFile.platinumUnlocked) saveFile.platinumUnlocked = [];
-        if(!saveFile.holographicUnlocked) saveFile.holographicUnlocked = [];
-        if(!saveFile.upgrades) saveFile.upgrades = {};
-        if(!saveFile.inventory) {
-            saveFile.inventory = {};
-            saveFile.unlocked.forEach(id => saveFile.inventory[id] = 1); // Give 1 of everything they already unlocked
-        }
-
-        authScreen.style.display = 'none'; gameScreen.style.display = 'flex';
-        document.getElementById('current-username-display').innerText = username;
-        initGameUI();
-    }
-
-    const elements = {
-        rollBtn: document.getElementById('roll-btn'), displayArea: document.getElementById('display-area'),
-        rollCount: document.getElementById('roll-count'), colCount: document.getElementById('collection-count'),
-        totalDucks: document.getElementById('total-ducks'), coins: document.getElementById('coin-count'),
-        spots: [document.getElementById('spot-1'), document.getElementById('spot-2')],
-        toggleContainer: document.getElementById('toggle-mode-container'), toggleBtn: document.getElementById('toggle-mode-btn')
-    };
-
     function initGameUI() {
-        elements.totalDucks.innerText = duckData.length;
-        elements.spots[0].style.display = 'flex'; elements.spots[1].style.display = 'none';
-        elements.spots.forEach(spot => {
-            spot.querySelector('.svg-container').innerHTML = generateSVGString({id:'none', svg:{body:'#475569', head:'#475569', beak:'#334155', tail:'#475569', accessory:''}}, false, false, false);
-            spot.querySelector('.duck-name').style.opacity = '0'; spot.querySelector('.duck-rarity').style.display = 'none';
-            spot.querySelectorAll('.tag').forEach(t => t.style.display = 'none');
-        });
-        elements.displayArea.style.borderColor = '#475569'; elements.displayArea.style.boxShadow = "inset 0 0 30px rgba(0,0,0,0.8)";
-        updateUI(); buildShop(); 
+        document.getElementById('total-ducks').innerText = duckData.length;
+        document.getElementById('spot-1').querySelector('.svg-container').innerHTML = generateSVGString({svg:{body:'#475569', head:'#475569', beak:'#334155', tail:'#475569', accessory:''}}, {});
+        updateUI();
     }
 
-    function saveGame() {
-        accounts[currentUser].saveData = saveFile;
-        localStorage.setItem('duckV6Accounts', JSON.stringify(accounts)); updateUI();
-    }
-
-    function updateUI() {
-        elements.rollCount.innerText = saveFile.rolls; elements.colCount.innerText = saveFile.unlocked.length; elements.coins.innerText = saveFile.coins;
-        if (saveFile.upgrades.twinEgg) {
-            elements.toggleContainer.style.display = 'block';
-            elements.toggleBtn.innerText = saveFile.isDoubleMode ? "Mode: Double Roll (2x Cost)" : "Mode: Single Roll";
-            elements.toggleBtn.style.background = saveFile.isDoubleMode ? "rgba(219, 39, 119, 0.8)" : "rgba(76, 29, 149, 0.8)";
-        } else { elements.toggleContainer.style.display = 'none'; saveFile.isDoubleMode = false; }
-        updateDynamicBackground();
-    }
-
-    function generateSVGString(duck, isShiny, isPlatinum, isHolo) {
-        let classes = 'duck-svg' + (isShiny ? ' is-shiny' : '') + (isPlatinum ? ' is-platinum' : '') + (isHolo ? ' is-holo' : '');
+    function generateSVGString(duck, muts) {
+        let classes = 'duck-svg';
+        if(muts.shiny) classes += ' is-shiny'; if(muts.plat) classes += ' is-platinum';
+        if(muts.holo) classes += ' is-holo'; if(muts.rad) classes += ' is-rad'; if(muts.shadow) classes += ' is-shadow';
+        
         return `<svg class="${classes}" viewBox="0 0 100 100">
+            ${duck.svg.accessory.includes('<defs>') ? duck.svg.accessory : ''}
             <path d="M 15 50 L 0 30 L 25 55 Z" fill="${duck.svg.tail}" />
             <ellipse cx="45" cy="65" rx="35" ry="25" fill="${duck.svg.body}" />
             <circle cx="70" cy="35" r="18" fill="${duck.svg.head}" />
             <path d="M 85 30 L 100 35 L 85 42 Z" fill="${duck.svg.beak}" />
-            <circle cx="75" cy="30" r="3" fill="${duck.id === 'vampire' ? '#ef4444' : '#0f172a'}" />
-            <g>${duck.svg.accessory}</g>
+            <circle cx="75" cy="30" r="3" fill="#0f172a" />
+            <g>${duck.svg.accessory.replace(/<defs>.*<\/defs>/,'')}</g>
         </svg>`;
     }
 
-    function spawnParticles(color) {
-        const area = document.getElementById('display-area');
-        for (let i = 0; i < 20; i++) {
-            let p = document.createElement('div'); p.className = 'particle'; p.style.backgroundColor = color; p.style.left = '50%';
-            p.style.setProperty('--tx', (Math.random() - 0.5) * 250 + 'px'); p.style.setProperty('--ty', (Math.random() - 0.5) * 250 - 50 + 'px');
-            area.appendChild(p); setTimeout(() => p.remove(), 1000);
+    // --- Anti-Cheat Logic ---
+    let clickTimes = [];
+    let isLocked = false;
+    function checkAutoClicker() {
+        const now = Date.now();
+        clickTimes.push(now);
+        if (clickTimes.length > 10) clickTimes.shift();
+        if (clickTimes.length === 10 && (now - clickTimes[0] < 1000)) {
+            triggerAntiCheat(); return true;
         }
+        return false;
     }
 
-    function calculateDuck() {
-        let currentTotalWeight = 0;
-        let modifiedDucks = duckData.map(d => {
-            let w = d.weight;
-            if (saveFile.upgrades.luckyLoaf && ['Rare', 'Epic', 'Legendary', 'Mythical'].includes(d.rarity)) w *= 2; 
-            currentTotalWeight += w; return { ...d, activeWeight: w };
-        });
-        let randomNum = Math.random() * currentTotalWeight;
-        for (let duck of modifiedDucks) {
-            if (randomNum < duck.activeWeight) return duck;
-            randomNum -= duck.activeWeight;
-        }
-        return modifiedDucks[0];
+    function triggerAntiCheat() {
+        isLocked = true; document.getElementById('anti-cheat-overlay').style.display = 'flex';
+        setTimeout(() => { isLocked = false; document.getElementById('anti-cheat-overlay').style.display = 'none'; clickTimes = []; }, 5000);
     }
 
-    function rollSequence() {
-        elements.rollBtn.disabled = true;
-        let numRolls = saveFile.isDoubleMode ? 2 : 1;
+    // --- Rolling Logic ---
+    document.getElementById('roll-btn').addEventListener('click', () => {
+        if(isLocked || checkAutoClicker()) return;
         
-        elements.spots[0].style.display = 'flex'; elements.spots[1].style.display = numRolls === 2 ? 'flex' : 'none';
-        elements.displayArea.classList.remove('pop-reveal'); elements.displayArea.classList.add('rolling');
-        elements.displayArea.style.borderColor = '#475569'; elements.displayArea.style.boxShadow = "inset 0 0 30px rgba(0,0,0,0.8)";
-
-        for(let i=0; i<2; i++) {
-            elements.spots[i].querySelector('.duck-name').style.opacity = '0'; elements.spots[i].querySelector('.duck-rarity').style.display = 'none';
-            elements.spots[i].querySelectorAll('.tag').forEach(t => t.style.display = 'none');
-        }
+        let rollBtn = document.getElementById('roll-btn'); rollBtn.disabled = true;
+        let area = document.getElementById('display-area');
+        area.classList.remove('pop-reveal'); area.classList.add('rolling');
+        
+        let spot = document.getElementById('spot-1');
+        spot.querySelector('.duck-name').style.opacity = '0';
+        spot.querySelectorAll('.tag').forEach(t => t.style.display = 'none');
 
         setTimeout(() => {
-            elements.displayArea.classList.remove('rolling'); elements.displayArea.classList.add('pop-reveal');
-            let colorAccent = '#475569'; let highestDuckColor = null; let coinMult = saveFile.upgrades.coinMagnet ? 2 : 1;
-
-            for(let i=0; i<numRolls; i++) {
-                saveFile.rolls++;
-                let duck = calculateDuck();
-                let isShiny = Math.random() < (saveFile.upgrades.shinyCharm ? 0.15 : 0.05);
-                let isPlatinum = Math.random() < (saveFile.upgrades.platPolish ? 0.04 : 0.02);
-                let isHolo = Math.random() < (saveFile.upgrades.holoMatrix ? 0.02 : 0.01);
-                
-                let isNew = false;
-                if (!saveFile.unlocked.includes(duck.id)) { saveFile.unlocked.push(duck.id); isNew = true; saveFile.coins += (25 * coinMult); } else { saveFile.coins += (5 * coinMult); }
-                
-                // Inventory Tracking (Duplicates)
-                saveFile.inventory[duck.id] = (saveFile.inventory[duck.id] || 0) + 1;
-
-                if (isShiny) { if (!saveFile.shinyUnlocked.includes(duck.id)) saveFile.shinyUnlocked.push(duck.id); saveFile.coins += (50 * coinMult); }
-                if (isPlatinum) { if (!saveFile.platinumUnlocked.includes(duck.id)) saveFile.platinumUnlocked.push(duck.id); saveFile.coins += (150 * coinMult); }
-                if (isHolo) { if (!saveFile.holographicUnlocked.includes(duck.id)) saveFile.holographicUnlocked.push(duck.id); saveFile.coins += (500 * coinMult); }
-
-                let spot = elements.spots[i];
-                spot.querySelector('.svg-container').innerHTML = generateSVGString(duck, isShiny, isPlatinum, isHolo);
-                let nameEl = spot.querySelector('.duck-name');
-                nameEl.innerText = duck.name; nameEl.style.opacity = '1'; nameEl.style.color = 'white'; nameEl.style.textShadow = `0 0 10px ${duck.color}, 0 2px 4px rgba(0,0,0,0.8)`;
-                
-                let rarityEl = spot.querySelector('.duck-rarity');
-                rarityEl.innerText = duck.rarity; rarityEl.style.display = "inline-block"; rarityEl.style.backgroundColor = duck.color + "33"; rarityEl.style.color = duck.color; rarityEl.style.border = `1px solid ${duck.color}`;
-
-                spot.querySelector('.tag-new').style.display = isNew ? "block" : "none";
-                spot.querySelector('.tag-shiny').style.display = isShiny ? "block" : "none";
-                spot.querySelector('.tag-platinum').style.display = isPlatinum ? "block" : "none";
-                spot.querySelector('.tag-holo').style.display = isHolo ? "block" : "none";
-
-                if (duck.weight < (duckData.find(d => d.color === colorAccent)?.weight || 9999)) colorAccent = duck.color;
-                if (['Rare','Epic','Legendary','Mythical'].includes(duck.rarity) || isShiny || isPlatinum || isHolo) highestDuckColor = duck.color;
-            }
-
-            elements.displayArea.style.borderColor = colorAccent;
-            elements.displayArea.style.boxShadow = `inset 0 0 50px ${colorAccent}44, 0 0 20px ${colorAccent}44`;
-            if(highestDuckColor) spawnParticles(highestDuckColor);
-            saveGame(); elements.rollBtn.disabled = false;
-        }, saveFile.upgrades.hyperRoller ? 50 : 800);
-    }
-
-    function buildShop() {
-        const shopList = document.getElementById('shop-list'); shopList.innerHTML = '';
-        Object.values(shopData).forEach(item => {
-            let isOwned = saveFile.upgrades[item.id]; let canAfford = saveFile.coins >= item.cost;
-            let div = document.createElement('div'); div.className = 'shop-item';
-            div.innerHTML = `<div class="shop-info"><h3>${item.name}</h3><p>${item.desc}</p></div>
-                <button class="buy-btn ${isOwned ? 'owned' : ''}" ${isOwned || !canAfford ? 'disabled' : ''} onclick="buyUpgrade('${item.id}', ${item.cost})">${isOwned ? 'Owned' : item.cost + ' Coins'}</button>`;
-            shopList.appendChild(div);
-        });
-    }
-
-    window.buyUpgrade = function(id, cost) {
-        if (saveFile.coins >= cost && !saveFile.upgrades[id]) { saveFile.coins -= cost; saveFile.upgrades[id] = true; saveGame(); buildShop(); }
-    }
-
-    function buildCollectionGrid() {
-        const grid = document.getElementById('collection-grid'); grid.innerHTML = ''; 
-        duckData.forEach(duck => {
-            const isUnlocked = saveFile.unlocked.includes(duck.id);
-            const card = document.createElement('div'); card.className = `duck-card ${isUnlocked ? '' : 'locked'}`;
-            if(isUnlocked) { 
-                card.style.borderColor = duck.color; 
-                card.innerHTML += `<div class="duck-count">x${saveFile.inventory[duck.id] || 0}</div>`;
-            }
-            let miniSVG = generateSVGString(duck, false, false, false).replace('viewBox="0 0 100 100"', 'viewBox="0 0 100 100" width="55" height="55" style="margin:auto;"');
-            if(!isUnlocked) miniSVG = miniSVG.replace(/fill="[^"]*"/g, 'fill="#475569"');
+            area.classList.remove('rolling'); area.classList.add('pop-reveal');
             
-            // Reconstruct card interior
-            let interior = `<div class="icon-tray">
-                ${saveFile.shinyUnlocked.includes(duck.id) ? '<span>✨</span>' : ''}
-                ${saveFile.platinumUnlocked.includes(duck.id) ? '<span>💎</span>' : ''}
-                ${saveFile.holographicUnlocked.includes(duck.id) ? '<span>🌌</span>' : ''}
-            </div>${miniSVG}<div class="card-name">${isUnlocked ? duck.name : '???'}</div>`;
-            
-            card.innerHTML = interior + card.innerHTML; // Append count badge correctly
-            grid.appendChild(card);
-        });
-    }
+            // Calc Duck
+            let totalWeight = duckData.reduce((acc, d) => acc + d.weight, 0);
+            let rand = Math.random() * totalWeight;
+            let duck = duckData[0];
+            for (let d of duckData) { if (rand < d.weight) { duck = d; break; } rand -= d.weight; }
 
-    elements.rollBtn.addEventListener('click', rollSequence);
-    document.getElementById('collection-btn').addEventListener('click', () => { buildCollectionGrid(); document.getElementById('collection-modal').style.display = 'flex'; });
-    document.getElementById('shop-btn').addEventListener('click', () => { buildShop(); document.getElementById('shop-modal').style.display = 'flex'; });
-    document.getElementById('settings-btn').addEventListener('click', () => { document.getElementById('settings-modal').style.display = 'flex'; });
+            // Mutations
+            let muts = {
+                shiny: Math.random() < (saveFile.upgrades.shinyCharm ? 0.15 : 0.05),
+                plat: Math.random() < (saveFile.upgrades.platPolish ? 0.04 : 0.02),
+                holo: Math.random() < (saveFile.upgrades.holoMatrix ? 0.02 : 0.01),
+                rad: Math.random() < (saveFile.upgrades.radDetector ? 0.01 : 0.005),
+                shadow: Math.random() < (saveFile.upgrades.voidOrb ? 0.003 : 0.001)
+            };
+
+            // Economy
+            let cMult = saveFile.upgrades.coinMagnet ? 2 : 1;
+            let isNew = !saveFile.unlocked.includes(duck.id);
+            if(isNew) { saveFile.unlocked.push(duck.id); saveFile.coins += 25 * cMult; } else { saveFile.coins += 5 * cMult; }
+            saveFile.inventory[duck.id] = (saveFile.inventory[duck.id] || 0) + 1;
+            saveFile.rolls++;
+
+            if(muts.shiny) { if(!saveFile.mutations.shiny.includes(duck.id)) saveFile.mutations.shiny.push(duck.id); saveFile.coins += 50 * cMult; }
+            if(muts.plat) { if(!saveFile.mutations.platinum.includes(duck.id)) saveFile.mutations.platinum.push(duck.id); saveFile.coins += 150 * cMult; }
+            if(muts.holo) { if(!saveFile.mutations.holo.includes(duck.id)) saveFile.mutations.holo.push(duck.id); saveFile.coins += 500 * cMult; }
+            if(muts.rad) { if(!saveFile.mutations.rad.includes(duck.id)) saveFile.mutations.rad.push(duck.id); saveFile.coins += 1000 * cMult; }
+            if(muts.shadow) { if(!saveFile.mutations.shadow.includes(duck.id)) saveFile.mutations.shadow.push(duck.id); saveFile.coins += 5000 * cMult; }
+
+            // Render
+            spot.querySelector('.svg-container').innerHTML = generateSVGString(duck, muts);
+            spot.querySelector('.duck-name').innerText = duck.name; spot.querySelector('.duck-name').style.opacity = '1';
+            
+            if(isNew) spot.querySelector('.tag-new').style.display = "block";
+            if(muts.shiny) spot.querySelector('.tag-shiny').style.display = "block";
+            if(muts.plat) spot.querySelector('.tag-platinum').style.display = "block";
+            if(muts.holo) spot.querySelector('.tag-holo').style.display = "block";
+            if(muts.rad) spot.querySelector('.tag-rad').style.display = "block";
+            if(muts.shadow) spot.querySelector('.tag-shadow').style.display = "block";
+
+            saveGame(); rollBtn.disabled = false;
+        }, saveFile.upgrades.clickGrease ? 200 : 500);
+    });
+
+    // --- UIs (Shop, Collection, Fusion) ---
     window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
-    elements.toggleBtn.addEventListener('click', () => { saveFile.isDoubleMode = !saveFile.isDoubleMode; saveGame(); });
+    
+    document.getElementById('shop-btn').addEventListener('click', () => {
+        const list = document.getElementById('shop-list'); list.innerHTML = '';
+        Object.values(shopData).forEach(item => {
+            let owned = saveFile.upgrades[item.id]; let afford = saveFile.coins >= item.cost;
+            list.innerHTML += `<div class="shop-item">
+                <div><h3 style="margin:0; color:var(--gold);">${item.name}</h3><p style="margin:0; font-size:12px;">${item.desc}</p></div>
+                <button class="buy-btn ${owned ? 'owned' : ''}" ${owned || !afford ? 'disabled' : ''} onclick="buy('${item.id}', ${item.cost})">${owned ? 'Owned' : item.cost + 'C'}</button>
+            </div>`;
+        });
+        document.getElementById('shop-modal').style.display = 'flex';
+    });
 
-    document.getElementById('hard-reset-btn').addEventListener('click', () => {
-        if(confirm(`DANGER! This deletes ALL data for player '${currentUser}'. Are you sure?`)) {
-            saveFile = createDefaultSave(); saveGame(); initGameUI(); closeModal('settings-modal'); alert("Account wiped successfully.");
+    window.buy = function(id, cost) {
+        if(saveFile.coins >= cost && !saveFile.upgrades[id]) { saveFile.coins -= cost; saveFile.upgrades[id] = true; saveGame(); document.getElementById('shop-btn').click(); }
+    };
+
+    document.getElementById('collection-btn').addEventListener('click', () => {
+        const grid = document.getElementById('collection-grid'); grid.innerHTML = ''; 
+        duckData.forEach(d => {
+            const unlocked = saveFile.unlocked.includes(d.id);
+            let mini = generateSVGString(d, {}).replace('viewBox="0 0 100 100"', 'viewBox="0 0 100 100" width="50" height="50" style="margin:auto;"');
+            if(!unlocked) mini = mini.replace(/fill="[^"]*"/g, 'fill="#475569"');
+            
+            grid.innerHTML += `<div class="duck-card ${unlocked ? '' : 'locked'}">
+                ${unlocked ? `<div class="duck-count">x${saveFile.inventory[d.id] || 0}</div>` : ''}
+                ${mini}<div class="card-name">${unlocked ? d.name : '???'}</div>
+            </div>`;
+        });
+        document.getElementById('collection-modal').style.display = 'flex';
+    });
+
+    document.getElementById('fusion-btn').addEventListener('click', () => {
+        const grid = document.getElementById('fusion-grid'); grid.innerHTML = '';
+        duckData.forEach(d => {
+            let count = saveFile.inventory[d.id] || 0;
+            if(count > 0 && rarityRanks[d.rarity] < 5) { // Cannot fuse Mythicals
+                let mini = generateSVGString(d, {}).replace('viewBox="0 0 100 100"', 'width="50" height="50"');
+                grid.innerHTML += `<div class="duck-card">
+                    <div class="duck-count" style="background:${count>=10?'#10b981':'#ef4444'}">x${count}</div>
+                    ${mini}<div class="card-name">${d.name}</div>
+                    <button class="fuse-btn" ${count < 10 ? 'disabled' : ''} onclick="fuse('${d.id}')">FUSE 10</button>
+                </div>`;
+            }
+        });
+        document.getElementById('fusion-modal').style.display = 'flex';
+    });
+
+    window.fuse = function(id) {
+        if(saveFile.inventory[id] >= 10) {
+            let baseDuck = duckData.find(d => d.id === id);
+            let targetRank = rarityRanks[baseDuck.rarity] + 1;
+            let possibleTargets = duckData.filter(d => rarityRanks[d.rarity] === targetRank);
+            
+            let resultDuck = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
+            
+            saveFile.inventory[id] -= 10;
+            saveFile.inventory[resultDuck.id] = (saveFile.inventory[resultDuck.id] || 0) + 1;
+            if(!saveFile.unlocked.includes(resultDuck.id)) saveFile.unlocked.push(resultDuck.id);
+            
+            saveGame();
+            document.getElementById('fusion-btn').click(); // Refresh UI
+            alert(`Fusion Successful! You crafted a ${resultDuck.rarity}: ${resultDuck.name}!`);
         }
-    });
+    };
 
-    document.getElementById('cheat-submit').addEventListener('click', () => {
-        const inputField = document.getElementById('cheat-input'); const code = inputField.value.trim().toLowerCase(); const msg = document.getElementById('cheat-message');
-        if (code === 'super') {
-            saveFile.coins += 9999999; 
-            saveFile.unlocked = duckData.map(d => d.id); 
-            saveFile.shinyUnlocked = duckData.map(d => d.id); 
-            saveFile.platinumUnlocked = duckData.map(d => d.id);
-            saveFile.holographicUnlocked = duckData.map(d => d.id);
-            duckData.forEach(d => saveFile.inventory[d.id] = 100);
-            Object.keys(shopData).forEach(key => saveFile.upgrades[key] = true); saveGame();
-            msg.innerText = "Cheat Activated! God Mode!"; msg.style.color = "#22c55e"; inputField.value = "";
-        } else { msg.innerText = "Invalid code."; msg.style.color = "#ef4444"; }
-        setTimeout(() => { msg.innerText = ""; }, 3000);
-    });
+    document.getElementById('settings-btn').addEventListener('click', () => document.getElementById('settings-modal').style.display='flex');
+    document.getElementById('logout-btn').addEventListener('click', () => location.reload());
+
 </script>
-
 </body>
 </html>
