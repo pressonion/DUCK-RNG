@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duck RNG Ultimate V13 - Mutations & Upgrades</title>
+    <title>Duck RNG Ultimate - Restored Data & MAXED</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
 
@@ -92,7 +92,6 @@
         .card-name { font-size: 13px; font-weight: 800; color: #f8fafc; margin-top: 5px;}
         .duck-count { position: absolute; bottom: -8px; right: -8px; background: var(--accent); color: white; border-radius: 99px; padding: 2px 8px; font-size: 12px; font-weight: 900; z-index: 5;}
         
-        /* New Mutation Badges */
         .card-mutations { position: absolute; top: 5px; left: 5px; font-size: 12px; display: flex; gap: 2px; flex-direction: column; text-align: left; letter-spacing: -2px;}
         
         .fuse-btn { background: #10b981; color: white; font-size: 11px; padding: 4px; margin-top: 5px; width: 80%; border-radius: 5px;}
@@ -222,8 +221,23 @@
 
     const rarityRanks = { "Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4, "Mythical": 5 };
 
-    let accounts = JSON.parse(localStorage.getItem('duckV13Accounts')) || {};
+    // FIX: Reverted the storage key back to duckV12Accounts so everyone gets their old saves back!
+    let accounts = JSON.parse(localStorage.getItem('duckV12Accounts')) || {};
     let currentUser = null; let saveFile = null;
+
+    // --- Inject MAXED Account (Restored) ---
+    if(!accounts["MAXED"]) {
+        let allIds = duckData.map(d => d.id);
+        accounts["MAXED"] = {
+            password: "god",
+            saveData: {
+                unlocked: [...allIds], inventory: Object.fromEntries(allIds.map(id => [id, 999])),
+                rolls: 999999, coins: 99999999,
+                upgrades: { coinMagnet:true, shinyCharm:true, platPolish:true, holoMatrix:true, radDetector:true, voidOrb:true, clickGrease:true, multiOpen:true, luckyLoaf:true, instaOpen:true },
+                mutations: { shiny: [...allIds], platinum: [...allIds], holo: [...allIds], rad: [...allIds], shadow: [...allIds] }
+            }
+        };
+    }
 
     function renderSavedAccounts() {
         const list = document.getElementById('saved-accounts-list'); list.innerHTML = '';
@@ -249,7 +263,8 @@
         } else { document.getElementById('auth-error').innerText = "Incorrect password."; }
     });
 
-    function saveGame() { accounts[currentUser].saveData = saveFile; localStorage.setItem('duckV13Accounts', JSON.stringify(accounts)); updateUI(); }
+    // FIX: Make sure the game saves back to the V12 key as well
+    function saveGame() { accounts[currentUser].saveData = saveFile; localStorage.setItem('duckV12Accounts', JSON.stringify(accounts)); updateUI(); }
     
     function updateUI() {
         document.getElementById('roll-count').innerText = saveFile.rolls; document.getElementById('collection-count').innerText = saveFile.unlocked.length;
