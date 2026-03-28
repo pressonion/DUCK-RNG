@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duck RNG Ultimate - Data Saved, Maxed Deleted!</title>
+    <title>Duck RNG Ultimate - Multi-Roll Fixed!</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
 
@@ -42,7 +42,6 @@
         .auth-btn:hover { background: linear-gradient(to bottom, #7dd3fc, #0369a1); transform: translateY(-2px); }
         #auth-error { color: #f87171; font-weight: bold; font-size: 14px; min-height: 20px; }
         
-        /* Added max height and scrolling so buttons never overlap the screen */
         #saved-accounts-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-height: 120px; overflow-y: auto; padding-top: 5px;}
         .saved-account-badge { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 16px; border-radius: 9999px; cursor: pointer; font-size:14px; font-weight:bold;}
 
@@ -51,9 +50,10 @@
         .gold-text { color: var(--gold); }
 
         #display-area { min-height: 250px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, rgba(51, 65, 85, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); border: 2px solid #475569; border-radius: 20px; margin-bottom: 20px; position: relative; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); padding: 20px 0; }
-        #duck-stage { display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; z-index: 2; }
-        .duck-spot { display: flex; flex-direction: column; align-items: center; width: 45%; }
-        .duck-svg { width: 110px; height: 110px; transition: all 0.3s; }
+        
+        #duck-stage { display: flex; gap: 10px; justify-content: center; align-items: flex-end; width: 100%; z-index: 2; flex-wrap: wrap;}
+        .duck-spot { display: flex; flex-direction: column; align-items: center; width: 30%; }
+        .duck-svg { width: 90px; height: 90px; transition: all 0.3s; }
         
         .rolling .duck-svg { animation: shake 0.3s infinite; filter: brightness(0) drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
         .pop-reveal .duck-svg { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -70,9 +70,9 @@
         .is-shadow { filter: invert(0.9) hue-rotate(180deg) drop-shadow(0 0 20px var(--shadow)); animation: float 3s infinite ease-in-out;}
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-        .duck-name { font-size: 22px; font-weight: 900; margin: 10px 0 5px; opacity: 0; }
-        .tag-row { display: flex; gap: 5px; height: 22px; margin-bottom: 5px; flex-wrap: wrap; justify-content:center;}
-        .tag { padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 900; display: none; }
+        .duck-name { font-size: 16px; font-weight: 900; margin: 10px 0 5px; opacity: 0; text-align: center; line-height: 1.1;}
+        .tag-row { display: flex; gap: 3px; height: 18px; margin-bottom: 5px; flex-wrap: wrap; justify-content:center; align-items: flex-end;}
+        .tag { padding: 2px 6px; border-radius: 9999px; font-size: 9px; font-weight: 900; display: none; }
         .tag-new { background: #ef4444; color: white; }
         .tag-shiny { background: var(--gold); color: #451a03; }
         .tag-platinum { background: var(--plat); color: #082f49; }
@@ -131,6 +131,20 @@
         <div id="display-area">
             <div id="duck-stage">
                 <div class="duck-spot" id="spot-1">
+                    <div class="tag-row">
+                        <span class="tag tag-new">NEW!</span><span class="tag tag-shiny">✨ SHINY</span><span class="tag tag-platinum">💎 PLAT</span><span class="tag tag-holo">🌌 HOLO</span><span class="tag tag-rad">☢️ RAD</span><span class="tag tag-shadow">🌑 SHADOW</span>
+                    </div>
+                    <div class="svg-container"></div>
+                    <div class="duck-name" style="color:#94a3b8">Ready</div>
+                </div>
+                <div class="duck-spot" id="spot-2" style="display:none;">
+                    <div class="tag-row">
+                        <span class="tag tag-new">NEW!</span><span class="tag tag-shiny">✨ SHINY</span><span class="tag tag-platinum">💎 PLAT</span><span class="tag tag-holo">🌌 HOLO</span><span class="tag tag-rad">☢️ RAD</span><span class="tag tag-shadow">🌑 SHADOW</span>
+                    </div>
+                    <div class="svg-container"></div>
+                    <div class="duck-name" style="color:#94a3b8">Ready</div>
+                </div>
+                <div class="duck-spot" id="spot-3" style="display:none;">
                     <div class="tag-row">
                         <span class="tag tag-new">NEW!</span><span class="tag tag-shiny">✨ SHINY</span><span class="tag tag-platinum">💎 PLAT</span><span class="tag tag-holo">🌌 HOLO</span><span class="tag tag-rad">☢️ RAD</span><span class="tag tag-shadow">🌑 SHADOW</span>
                     </div>
@@ -213,7 +227,6 @@
         shinyCharm: { id: 'shinyCharm', name: 'Shiny Charm', desc: 'Triples Shiny chance (15%).', cost: 300 },
         platPolish: { id: 'platPolish', name: 'Platinum Polish', desc: 'Doubles Platinum chance (4%).', cost: 1000 },
         instaOpen: { id: 'instaOpen', name: 'Insta-Open', desc: 'Removes rolling animation.', cost: 1500 },
-        clickGrease: { id: 'clickGrease', name: 'Click Grease', desc: 'Lowers base roll cooldown.', cost: 2000 },
         luckyLoaf: { id: 'luckyLoaf', name: 'Lucky Loaf', desc: 'Cuts Common/Uncommon drops in half.', cost: 2500 },
         holoMatrix: { id: 'holoMatrix', name: 'Holo Matrix', desc: 'Doubles Holo chance (2%).', cost: 3500 },
         multiOpen: { id: 'multiOpen', name: 'Multi-Roller', desc: 'Rolls 3 ducks at once!', cost: 5000 },
@@ -223,10 +236,8 @@
 
     const rarityRanks = { "Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4, "Mythical": 5 };
 
-    // Get the V12 storage so players keep their items!
     let accounts = JSON.parse(localStorage.getItem('duckV12Accounts')) || {};
 
-    // --- ACTIVELY DELETE THE MAXED ACCOUNT ---
     if(accounts["MAXED"]) {
         delete accounts["MAXED"];
         localStorage.setItem('duckV12Accounts', JSON.stringify(accounts));
@@ -326,37 +337,46 @@
     document.getElementById('roll-btn').addEventListener('click', () => {
         if(isLocked || checkAutoClicker()) return;
         let rollBtn = document.getElementById('roll-btn'); rollBtn.disabled = true;
-        let area = document.getElementById('display-area'); let spot = document.getElementById('spot-1');
+        let area = document.getElementById('display-area'); 
         
-        let delay = saveFile.upgrades.instaOpen ? 0 : (saveFile.upgrades.clickGrease ? 200 : 500);
+        let rollsToDo = saveFile.upgrades.multiOpen ? 3 : 1;
+        let spots = [document.getElementById('spot-1'), document.getElementById('spot-2'), document.getElementById('spot-3')];
+        
+        // Show correct number of spots
+        spots.forEach((spot, index) => { if(spot) spot.style.display = index < rollsToDo ? 'flex' : 'none'; });
+        
+        let delay = saveFile.upgrades.instaOpen ? 0 : 500;
         
         if(delay > 0) {
             area.classList.remove('pop-reveal'); area.classList.add('rolling');
-            spot.querySelector('.duck-name').style.opacity = '0';
-            spot.querySelectorAll('.tag').forEach(t => t.style.display = 'none');
+            spots.forEach(spot => {
+                if(!spot || spot.style.display === 'none') return;
+                let nameEl = spot.querySelector('.duck-name');
+                if(nameEl) nameEl.style.opacity = '0';
+                spot.querySelectorAll('.tag').forEach(t => t.style.display = 'none');
+            });
         }
 
         setTimeout(() => {
             if(delay > 0) { area.classList.remove('rolling'); area.classList.add('pop-reveal'); }
             
-            let rollsToDo = saveFile.upgrades.multiOpen ? 3 : 1;
-            let bestResult = null;
-
             for(let i=0; i<rollsToDo; i++) {
                 let res = processRoll();
-                if(!bestResult || rarityRanks[res.duck.rarity] > rarityRanks[bestResult.duck.rarity]) { bestResult = res; }
-            }
+                let spot = spots[i];
+                if(!spot) continue;
 
-            spot.querySelector('.svg-container').innerHTML = generateSVGString(bestResult.duck, bestResult.muts);
-            spot.querySelector('.duck-name').innerText = bestResult.duck.name; spot.querySelector('.duck-name').style.opacity = '1';
-            
-            spot.querySelectorAll('.tag').forEach(t => t.style.display = 'none');
-            if(bestResult.isNew) spot.querySelector('.tag-new').style.display = "block";
-            if(bestResult.muts.shiny) spot.querySelector('.tag-shiny').style.display = "block";
-            if(bestResult.muts.plat) spot.querySelector('.tag-platinum').style.display = "block";
-            if(bestResult.muts.holo) spot.querySelector('.tag-holo').style.display = "block";
-            if(bestResult.muts.rad) spot.querySelector('.tag-rad').style.display = "block";
-            if(bestResult.muts.shadow) spot.querySelector('.tag-shadow').style.display = "block";
+                spot.querySelector('.svg-container').innerHTML = generateSVGString(res.duck, res.muts);
+                spot.querySelector('.duck-name').innerText = res.duck.name; 
+                spot.querySelector('.duck-name').style.opacity = '1';
+                
+                spot.querySelectorAll('.tag').forEach(t => t.style.display = 'none');
+                if(res.isNew) spot.querySelector('.tag-new').style.display = "block";
+                if(res.muts.shiny) spot.querySelector('.tag-shiny').style.display = "block";
+                if(res.muts.plat) spot.querySelector('.tag-platinum').style.display = "block";
+                if(res.muts.holo) spot.querySelector('.tag-holo').style.display = "block";
+                if(res.muts.rad) spot.querySelector('.tag-rad').style.display = "block";
+                if(res.muts.shadow) spot.querySelector('.tag-shadow').style.display = "block";
+            }
 
             saveGame(); rollBtn.disabled = false;
         }, delay);
