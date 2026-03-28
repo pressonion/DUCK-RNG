@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duck RNG Ultimate - Restored Data & MAXED</title>
+    <title>Duck RNG Ultimate - Data Saved, Maxed Deleted!</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
 
@@ -41,7 +41,9 @@
         .auth-btn { background: linear-gradient(to bottom, #38bdf8, #0284c7); color: white; font-size: 18px; padding: 15px; box-shadow: 0 8px 20px rgba(2, 132, 199, 0.5); text-transform: uppercase; width: 95%; margin: 10px auto 0; border:none; border-radius:9999px; font-weight:bold; cursor:pointer;}
         .auth-btn:hover { background: linear-gradient(to bottom, #7dd3fc, #0369a1); transform: translateY(-2px); }
         #auth-error { color: #f87171; font-weight: bold; font-size: 14px; min-height: 20px; }
-        #saved-accounts-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        
+        /* Added max height and scrolling so buttons never overlap the screen */
+        #saved-accounts-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-height: 120px; overflow-y: auto; padding-top: 5px;}
         .saved-account-badge { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 16px; border-radius: 9999px; cursor: pointer; font-size:14px; font-weight:bold;}
 
         #game-screen { display: none; flex-direction: column; }
@@ -221,23 +223,16 @@
 
     const rarityRanks = { "Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4, "Mythical": 5 };
 
-    // FIX: Reverted the storage key back to duckV12Accounts so everyone gets their old saves back!
+    // Get the V12 storage so players keep their items!
     let accounts = JSON.parse(localStorage.getItem('duckV12Accounts')) || {};
-    let currentUser = null; let saveFile = null;
 
-    // --- Inject MAXED Account (Restored) ---
-    if(!accounts["MAXED"]) {
-        let allIds = duckData.map(d => d.id);
-        accounts["MAXED"] = {
-            password: "god",
-            saveData: {
-                unlocked: [...allIds], inventory: Object.fromEntries(allIds.map(id => [id, 999])),
-                rolls: 999999, coins: 99999999,
-                upgrades: { coinMagnet:true, shinyCharm:true, platPolish:true, holoMatrix:true, radDetector:true, voidOrb:true, clickGrease:true, multiOpen:true, luckyLoaf:true, instaOpen:true },
-                mutations: { shiny: [...allIds], platinum: [...allIds], holo: [...allIds], rad: [...allIds], shadow: [...allIds] }
-            }
-        };
+    // --- ACTIVELY DELETE THE MAXED ACCOUNT ---
+    if(accounts["MAXED"]) {
+        delete accounts["MAXED"];
+        localStorage.setItem('duckV12Accounts', JSON.stringify(accounts));
     }
+
+    let currentUser = null; let saveFile = null;
 
     function renderSavedAccounts() {
         const list = document.getElementById('saved-accounts-list'); list.innerHTML = '';
@@ -263,7 +258,6 @@
         } else { document.getElementById('auth-error').innerText = "Incorrect password."; }
     });
 
-    // FIX: Make sure the game saves back to the V12 key as well
     function saveGame() { accounts[currentUser].saveData = saveFile; localStorage.setItem('duckV12Accounts', JSON.stringify(accounts)); updateUI(); }
     
     function updateUI() {
